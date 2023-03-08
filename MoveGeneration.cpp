@@ -3,7 +3,6 @@
 //
 #include "MoveGeneration.h"
 
-
 uint64_t whiteKingMoves(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces)
 {
     return ((kingPos & ~H) << 7 |
@@ -64,13 +63,21 @@ uint64_t blackPawnMoves(uint64_t& pawnPos, uint64_t& whitePieces, uint64_t& blac
     return (pawnPos >> 8) & ~(whitePieces | blackPieces) |
            (((pawnPos >> 8) & ~(whitePieces | blackPieces) & R6) >> 8) & ~(whitePieces | blackPieces) |
            ((((pawnPos & ~A) >> 7) | ((pawnPos & ~H) >> 9)) & (whitePieces | specialFlags));
-
-
 }
 
-std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t epFlags)
+uint64_t whitePawnAttacks(uint64_t& pawnPos)
 {
-    std::vector<uint64_t> moves;
+    return ((pawnPos & ~H) << 7) | ((pawnPos & ~A) << 9);
+}
+
+uint64_t blackPawnAttacks(uint64_t& pawnPos)
+{
+    return ((pawnPos & ~A) >> 7) | ((pawnPos & ~H) >> 9);
+}
+
+std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t epFlags)
+{
+    std::vector<Move> moves;
     //black to move
     if(color)
     {
@@ -78,7 +85,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
         uint64_t kingMoves = blackKingMoves(kingPos, whitePieces, blackPieces);
         while((kingMoves & -kingMoves) > 0)
         {
-            moves.push_back((kingMoves & -kingMoves));
+            moves.push_back(Move((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0));
             kingMoves ^= (kingMoves & -kingMoves);
         }
 
@@ -90,7 +97,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
 
             while((knightMoves & -knightMoves) > 0)
             {
-                moves.push_back(knightMoves & -knightMoves);
+                moves.push_back(Move(knightMoves & -knightMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(knightMoves & -knightMoves)) << 4), 4) );
                 knightMoves ^= (knightMoves & -knightMoves);
             }
             knights ^= currMove;
@@ -104,7 +111,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
 
             while((pawnMoves & -pawnMoves) > 0)
             {
-                moves.push_back((pawnMoves & -pawnMoves));
+                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4), 5) );
                 pawnMoves ^= (pawnMoves & -pawnMoves);
             }
             pawns ^= currMove;
@@ -116,7 +123,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
         uint64_t kingMoves = whiteKingMoves(kingPos, whitePieces, blackPieces);
         while((kingMoves & -kingMoves) > 0)
         {
-            moves.push_back((kingMoves & -kingMoves));
+            moves.push_back(Move((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0));
             kingMoves ^= (kingMoves & -kingMoves);
         }
 
@@ -128,7 +135,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
 
             while((knightMoves & -knightMoves) > 0)
             {
-                moves.push_back(knightMoves & -knightMoves);
+                moves.push_back(Move(knightMoves & -knightMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(knightMoves & -knightMoves)) << 4), 4) );
                 knightMoves ^= (knightMoves & -knightMoves);
             }
             knights ^= currMove;
@@ -142,7 +149,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
 
             while((pawnMoves & -pawnMoves) > 0)
             {
-                moves.push_back((pawnMoves & -pawnMoves));
+                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4), 5) );
                 pawnMoves ^= (pawnMoves & -pawnMoves);
             }
             pawns ^= currMove;
@@ -150,5 +157,100 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
     }
     return moves;
 }
+
+void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t myPieces, uint64_t oppPieces, uint64_t kingPos, uint64_t oppKingPos, uint64_t oppKnights, uint64_t oppPawns)
+{
+    for(int i = 0; i < pseudoLegalMoves.size(); i++)
+    {
+        Move move = pseudoLegalMoves[i];
+
+        if(color)
+        {
+            //update king board and piece board.
+            //kingPos ^= (move.absoluteMove & -move.absoluteMove);
+            myPieces += move.absoluteMove;
+
+            //check for checks.
+            uint64_t attacks = whiteKingMoves(oppKingPos, myPieces, oppPieces);
+            uint64_t knightAttacks = 0;
+            while((oppKnights & -oppKnights) > 0)
+            {
+                uint64_t knight = (oppKnights & -oppKnights);
+                knightAttacks |= whiteKnightMoves(knight, oppPieces, myPieces);
+                oppKnights ^= (oppKnights & -oppKnights);
+            }
+            uint64_t pawnAttacks = 0;
+            while((oppPawns & -oppPawns) > 0)
+            {
+                uint64_t pawn = (oppPawns & -oppPawns);
+                pawnAttacks |= whitePawnAttacks(pawn);
+                oppPawns ^= (oppPawns & -oppPawns);
+            }
+            attacks = attacks | knightAttacks | pawnAttacks;
+            if(move.getPiece() == 0)
+            {
+                if( (move.absoluteMove & attacks) != 0 )
+                {
+                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                }
+            }
+            else
+            {
+                if( (kingPos & attacks) != 0 )
+                {
+                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                }
+            }
+
+
+            myPieces ^= move.absoluteMove;
+        }
+        //white
+        else
+        {
+            //update king board and piece board.
+            //kingPos ^= (move.absoluteMove & -move.absoluteMove);
+            myPieces += move.absoluteMove;
+
+            //check for checks.
+            uint64_t attacks = blackKingMoves(oppKingPos, myPieces, oppPieces);
+            uint64_t knightAttacks = 0;
+            while((oppKnights & -oppKnights) > 0)
+            {
+                uint64_t knight = (oppKnights & -oppKnights);
+                knightAttacks |= blackKnightMoves(knight, myPieces, oppPieces);
+                oppKnights ^= (oppKnights & -oppKnights);
+            }
+            uint64_t pawnAttacks = 0;
+            while((oppPawns & -oppPawns) > 0)
+            {
+                uint64_t pawn = (oppPawns & -oppPawns);
+                pawnAttacks |= blackPawnAttacks(pawn);
+                oppPawns ^= (oppPawns & -oppPawns);
+            }
+            attacks = attacks | knightAttacks | pawnAttacks;
+            if(move.getPiece() == 0)
+            {
+                if( (move.absoluteMove & attacks) != 0 )
+                {
+                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                }
+            }
+            else
+            {
+                if( (kingPos & attacks) != 0 )
+                {
+                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                }
+            }
+
+
+            myPieces ^= move.absoluteMove;
+        }
+    }
+}
+
+
+
 
 

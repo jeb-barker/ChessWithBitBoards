@@ -3,4 +3,4 @@ project(ChessWithBitBoards)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ChessWithBitBoards main.cpp MoveGeneration.h MoveGeneration.cpp Move.cpp Move.h)
+add_executable(ChessWithBitBoards main.cpp MoveGeneration.h MoveGeneration.cpp Move.cpp Move.h Board.cpp Board.h)

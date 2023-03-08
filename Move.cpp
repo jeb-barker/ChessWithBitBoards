@@ -3,10 +3,11 @@
 //
 #include "Move.h"
 
-Move::Move(uint64_t abs, uint16_t mov)
+Move::Move(uint64_t abs, uint16_t mov, int p)
 {
     absoluteMove = abs;
     move = mov;
+    piece = p;
 }
 
 uint16_t Move::getFromSquare()
@@ -20,4 +21,8 @@ uint16_t Move::getToSquare() {
 
 uint16_t Move::getFlags() {
     return (move) & 0b1111;
+}
+
+int Move::getPiece() {
+    return piece;
 }
