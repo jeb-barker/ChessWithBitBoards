@@ -13,9 +13,10 @@ class Move {
 public:
     uint64_t absoluteMove;
     uint16_t move;
-    Move();
-    explicit Move(uint16_t);
-
+    Move(uint64_t abs, uint16_t mov);
+    uint16_t getFromSquare();
+    uint16_t getToSquare();
+    uint16_t getFlags();
 };
 
 

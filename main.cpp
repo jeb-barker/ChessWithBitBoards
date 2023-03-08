@@ -39,6 +39,6 @@ int main() {
     printBoard(0,blackKingMoves(blackKingPos, whitePieces, blackPieces));
     std::cout << std::endl;
     printBoard(whiteKingPos, blackKingPos, whitePieces, blackPieces, whiteKnights, blackKnights);
-    std::vector<Move> moves = pseudoLegalMoves(true, whitePieces, blackPieces, blackKingPos, blackKnights, blackPawns, 0);
+    std::vector<uint64_t> moves = pseudoLegalMoves(true, whitePieces, blackPieces, blackKingPos, blackKnights, blackPawns, 0);
     return 0;
 }

@@ -74,6 +74,7 @@ std::vector<uint64_t> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64
     //black to move
     if(color)
     {
+
         uint64_t kingMoves = blackKingMoves(kingPos, whitePieces, blackPieces);
         while((kingMoves & -kingMoves) > 0)
         {
