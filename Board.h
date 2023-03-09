@@ -22,7 +22,7 @@ public:
     uint64_t blackPawns;
     bool color;
 
-    void printBoard();
+    void printBoard() const;
 
     Board();
 
@@ -32,6 +32,7 @@ public:
 
 private:
     uint64_t epFlags;
+    uint16_t castlingFlags;
 };
 
 

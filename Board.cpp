@@ -6,7 +6,7 @@
 #include "Board.h"
 #include "MoveGeneration.h"
 
-void Board::printBoard()
+void Board::printBoard() const
 {
     for(int i = 7; i >= 0; i--)
     {
@@ -33,12 +33,12 @@ void Board::printBoard()
 
 Board::Board()
 {
-    whitePieces = 0x000000000000ff08;
+    whitePieces = 0x000000000000ff4A;
     whiteKing = 0x0000000000000008;
     whitePawns = 0x000000000000ff00;
     whiteKnights = 0x0000000000000042;
 
-    blackPieces = 0x08ff000000000000;
+    blackPieces = 0x4Aff000000000000;
     blackKing = 0x0800000000000000;
     blackPawns = 0x00ff000000000000;
     blackKnights = 0x4200000000000000;
@@ -46,19 +46,20 @@ Board::Board()
     color = false;
 
     epFlags = 0;
+    castlingFlags = 0b0000;
 }
 
 std::vector<Move> Board::legalMoves()
 {
     if(color)
     {
-        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, epFlags);
+        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, epFlags, castlingFlags);
         filterLegalMoves(moves, color, blackPieces, whitePieces, blackKing, whiteKing, whiteKnights, whitePawns);
         return moves;
     }
     else
     {
-        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, epFlags);
+        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, epFlags, castlingFlags);
         filterLegalMoves(moves, color, whitePieces, blackPieces, whiteKing, blackKing, blackKnights, blackPawns);
         return moves;
     }
