@@ -17,20 +17,22 @@ uint64_t whiteKingMoves(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blac
 
 Move kingsideCastle(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces, bool color)
 {
-    uint64_t notAllPieces = ~(whitePieces | blackPieces);
-    if((((kingPos >> 1) & notAllPieces) & (((kingPos >> 2) & notAllPieces))))
+    uint64_t notAllPieces = (whitePieces | blackPieces);
+    if(((((kingPos >> 1) & notAllPieces) == 0) && (((kingPos >> 2) & notAllPieces) == 0 )))
     {
         return Move(kingPos >> 2, (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingPos >> 2)) << 4) + 0b0010, 0, color);
     }
+    return Move(0,0,-1,0);
 }
 
 Move queensideCastle(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces, bool color)
 {
-    uint64_t notAllPieces = ~(whitePieces | blackPieces);
-    if((((kingPos << 1) & notAllPieces) & ((kingPos << 2) & notAllPieces) & ((kingPos << 3) & notAllPieces)))
+    uint64_t notAllPieces = (whitePieces | blackPieces);
+    if(((((kingPos << 1) & notAllPieces) == 0) && (((kingPos << 2) & notAllPieces) == 0) && (((kingPos << 3) & notAllPieces) == 0)))
     {
         return Move(kingPos << 3, (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingPos << 3)) << 4) + 0b0011, 0, color);
     }
+    return Move(0,0,-1,0);
 }
 
 uint64_t blackKingMoves(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces)
@@ -109,12 +111,16 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
         //kingside castling:
         if((castlingFlags & 0b0001) == 0b0001)
         {
-            moves.push_back(kingsideCastle(kingPos, whitePieces, blackPieces, color));
+            Move m = kingsideCastle(kingPos, whitePieces, blackPieces, color);
+            if(m.getPiece() != -1)
+                moves.push_back(m);
         }
         //queenside castling:
         if((castlingFlags & 0b0010) == 0b0010)
         {
-            moves.push_back(queensideCastle(kingPos, whitePieces, blackPieces, color));
+            Move m = queensideCastle(kingPos, whitePieces, blackPieces, color);
+            if(m.getPiece() != -1)
+                moves.push_back(m);
         }
         uint64_t knightMoves;
         while((knights & -knights) > 0)
@@ -162,12 +168,16 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
         //castling for white
         if((castlingFlags & 0b0100) == 0b0100)
         {
-            moves.push_back(kingsideCastle(kingPos, whitePieces, blackPieces, color));
+            Move m = kingsideCastle(kingPos, whitePieces, blackPieces, color);
+            if(m.getPiece() != -1)
+                moves.push_back(m);
         }
         //queenside castling:
         if((castlingFlags & 0b1000) == 0b1000)
         {
-            moves.push_back(queensideCastle(kingPos, whitePieces, blackPieces, color));
+            Move m = queensideCastle(kingPos, whitePieces, blackPieces, color);
+            if(m.getPiece() != -1)
+                moves.push_back(m);
         }
 
         uint64_t knightMoves;
@@ -241,6 +251,7 @@ void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t 
                 {
                     pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
                 }
+                //check all castling squares
             }
             else
             {
@@ -283,6 +294,7 @@ void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t 
                 {
                     pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
                 }
+                //check all castling squares (and check for if king is in check now)
             }
             else
             {

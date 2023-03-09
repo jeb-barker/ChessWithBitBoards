@@ -33,20 +33,22 @@ void Board::printBoard() const
 
 Board::Board()
 {
-    whitePieces = 0x000000000000ff4A;
-    whiteKing = 0x0000000000000008;
-    whitePawns = 0x000000000000ff00;
+    whitePieces =  0x000000000000ff4A;
+    whiteKing =    0x0000000000000008;
+    whitePawns =   0x000000000000ff00;
     whiteKnights = 0x0000000000000042;
 
-    blackPieces = 0x4Aff000000000000;
-    blackKing = 0x0800000000000000;
-    blackPawns = 0x00ff000000000000;
+    blackPieces =  0x4Aff000000000000;
+    blackKing =    0x0800000000000000;
+    blackPawns =   0x00ff000000000000;
     blackKnights = 0x4200000000000000;
 
     color = false;
 
     epFlags = 0;
-    castlingFlags = 0b0000;
+    castlingFlags = 0b1111;
+
+    moveHistory = std::vector<Move>();
 }
 
 std::vector<Move> Board::legalMoves()
@@ -162,6 +164,7 @@ void Board::makeMove(Move move)
             blackPieces ^= toSquare;
     }
     color = !color;
+    moveHistory.push_back(move);
 }
 
 

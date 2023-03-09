@@ -8,10 +8,12 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 #include "Move.h"
 
 class Board {
 public:
+    std::vector<Move> moveHistory;
     uint64_t whitePieces;
     uint64_t blackPieces;
     uint64_t whiteKing;
