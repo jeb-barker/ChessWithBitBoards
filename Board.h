@@ -29,6 +29,9 @@ public:
     std::vector<Move> legalMoves();
 
     void makeMove(Move move);
+
+private:
+    uint64_t epFlags;
 };
 
 

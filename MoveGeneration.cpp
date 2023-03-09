@@ -75,7 +75,7 @@ uint64_t blackPawnAttacks(uint64_t& pawnPos)
     return ((pawnPos & ~A) >> 7) | ((pawnPos & ~H) >> 9);
 }
 
-std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t epFlags)
+std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t& epFlags)
 {
     std::vector<Move> moves;
     //black to move
@@ -111,7 +111,12 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
 
             while((pawnMoves & -pawnMoves) > 0)
             {
-                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4), 5, true) );
+                uint16_t ep = 0;
+                if(epFlags == (pawnMoves & -pawnMoves))
+                {
+                    ep = 0b0101;
+                }
+                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, true) );
                 pawnMoves ^= (pawnMoves & -pawnMoves);
             }
             pawns ^= currMove;
@@ -149,7 +154,12 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
 
             while((pawnMoves & -pawnMoves) > 0)
             {
-                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4), 5, false) );
+                uint16_t ep = 0;
+                if(epFlags == (pawnMoves & -pawnMoves))
+                {
+                    ep = 0b0101;
+                }
+                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, false) );
                 pawnMoves ^= (pawnMoves & -pawnMoves);
             }
             pawns ^= currMove;
