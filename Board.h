@@ -22,13 +22,17 @@ public:
     uint64_t blackPawns;
     bool color;
 
-    void printBoard();
+    void printBoard() const;
 
     Board();
 
     std::vector<Move> legalMoves();
 
     void makeMove(Move move);
+
+private:
+    uint64_t epFlags;
+    uint16_t castlingFlags;
 };
 
 
