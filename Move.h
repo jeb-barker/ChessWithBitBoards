@@ -14,7 +14,8 @@ public:
     uint64_t absoluteMove;
     uint16_t move;
     int piece;
-    Move(uint64_t abs, uint16_t mov, int piece);
+    bool color;
+    Move(uint64_t abs, uint16_t mov, int piece, bool c);
     uint16_t getFromSquare();
     uint16_t getToSquare();
     uint16_t getFlags();

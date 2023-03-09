@@ -27,6 +27,8 @@ public:
     Board();
 
     std::vector<Move> legalMoves();
+
+    void makeMove(Move move);
 };
 
 

@@ -46,7 +46,8 @@ Board::Board()
     color = false;
 }
 
-std::vector<Move> Board::legalMoves() {
+std::vector<Move> Board::legalMoves()
+{
     if(color)
     {
         std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, 0);
@@ -60,5 +61,80 @@ std::vector<Move> Board::legalMoves() {
         return moves;
     }
 }
+
+void Board::makeMove(Move move)
+{
+    uint64_t fromSquare = sixBitToSquare[move.getFromSquare()];
+    uint64_t toSquare = sixBitToSquare[move.getToSquare()];
+    if(color)
+    {
+        if(move.piece == 0)
+        {
+            //king
+            blackKing = move.absoluteMove;
+        }
+        else if(move.piece == 4)
+        {
+            //knights
+            blackKnights ^= fromSquare;
+            blackKnights += toSquare;
+        }
+        else if(move.piece == 5)
+        {
+            //pawns
+            //en-passant and promotion should be handled here.
+            blackPawns ^= fromSquare;
+            blackPawns += toSquare;
+        }
+        //all pieces
+        blackPieces ^= fromSquare;
+        blackPieces += toSquare;
+
+        //captures
+        if((whiteKing & toSquare) != 0)
+            whiteKing ^= toSquare;
+        if((whiteKnights & toSquare) != 0)
+            whiteKnights ^= toSquare;
+        if((whitePawns & toSquare) != 0)
+            whitePawns ^= toSquare;
+        if((whitePieces & toSquare) != 0)
+            whitePieces ^= toSquare;
+
+    }
+    else
+    {
+        if(move.piece == 0)
+        {
+            //king
+            whiteKing = move.absoluteMove;
+        }
+        else if(move.piece == 4)
+        {
+            //knights
+            whiteKnights ^= fromSquare;
+            whiteKnights += toSquare;
+        }
+        else if(move.piece == 5)
+        {
+            //pawns
+            whitePawns ^= fromSquare;
+            whitePawns += toSquare;
+        }
+        //all pieces
+        whitePieces ^= fromSquare;
+        whitePieces += toSquare;
+
+        if((blackKing & toSquare) != 0)
+            blackKing ^= toSquare;
+        if((blackKnights & toSquare) != 0)
+            blackKnights ^= toSquare;
+        if((blackPawns & toSquare) != 0)
+            blackPawns ^= toSquare;
+        if((blackPieces & toSquare) != 0)
+            blackPieces ^= toSquare;
+    }
+    color = !color;
+}
+
 
 #include "Board.h"

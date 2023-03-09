@@ -3,11 +3,12 @@
 //
 #include "Move.h"
 
-Move::Move(uint64_t abs, uint16_t mov, int p)
+Move::Move(uint64_t abs, uint16_t mov, int p, bool c=false)
 {
     absoluteMove = abs;
     move = mov;
     piece = p;
+    color = c;
 }
 
 uint16_t Move::getFromSquare()
