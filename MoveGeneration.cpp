@@ -73,15 +73,15 @@ uint64_t blackKnightMoves(uint64_t& knightPos, uint64_t& whitePieces, uint64_t& 
 
 uint64_t whitePawnMoves(uint64_t& pawnPos, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t& specialFlags)
 {
-    return (pawnPos << 8) & ~(whitePieces | blackPieces) |
-         (((pawnPos << 8) & ~(whitePieces | blackPieces) & R3) << 8) & ~(whitePieces | blackPieces) |
-         ((((pawnPos & ~H) << 7) | ((pawnPos & ~A) << 9)) & (blackPieces | specialFlags));
+    return ((pawnPos << 8) & ~(whitePieces | blackPieces)) |
+           (((((pawnPos << 8) & ~(whitePieces | blackPieces)) & R3) << 8) & ~(whitePieces | blackPieces)) |
+           ((((pawnPos & ~H) << 7) | ((pawnPos & ~A) << 9)) & (blackPieces | specialFlags));
 }
 
 uint64_t blackPawnMoves(uint64_t& pawnPos, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t& specialFlags)
 {
-    return (pawnPos >> 8) & ~(whitePieces | blackPieces) |
-           (((pawnPos >> 8) & ~(whitePieces | blackPieces) & R6) >> 8) & ~(whitePieces | blackPieces) |
+    return ((pawnPos >> 8) & ~(whitePieces | blackPieces)) |
+           (((((pawnPos >> 8) & ~(whitePieces | blackPieces)) & R6) >> 8) & ~(whitePieces | blackPieces)) |
            ((((pawnPos & ~A) >> 7) | ((pawnPos & ~H) >> 9)) & (whitePieces | specialFlags));
 }
 
