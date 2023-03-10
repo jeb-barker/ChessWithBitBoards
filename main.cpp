@@ -5,8 +5,11 @@
 int main() {
     //initialize board.
     Board b = Board();
+    //initialize rays
+    Rays::initializeRays();
+    uint64_t a = H1;
     std::vector<Move> moves;
-    int index = 0;
+    int index;
     while(true)
     {
         b.printBoard();

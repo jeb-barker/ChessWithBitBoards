@@ -1,7 +1,9 @@
 //
 // Created by Jeb Barker on 3/7/23.
 //
+#include <iostream>
 #include "MoveGeneration.h"
+#include <bit>
 
 uint64_t whiteKingMoves(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces)
 {
@@ -30,7 +32,7 @@ Move queensideCastle(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPi
     uint64_t notAllPieces = (whitePieces | blackPieces);
     if(((((kingPos << 1) & notAllPieces) == 0) && (((kingPos << 2) & notAllPieces) == 0) && (((kingPos << 3) & notAllPieces) == 0)))
     {
-        return Move(kingPos << 3, (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingPos << 3)) << 4) + 0b0011, 0, color);
+        return Move(kingPos << 2, (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingPos << 2)) << 4) + 0b0011, 0, color);
     }
     return Move(0,0,-1,0);
 }
@@ -73,15 +75,15 @@ uint64_t blackKnightMoves(uint64_t& knightPos, uint64_t& whitePieces, uint64_t& 
 
 uint64_t whitePawnMoves(uint64_t& pawnPos, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t& specialFlags)
 {
-    return (pawnPos << 8) & ~(whitePieces | blackPieces) |
-         (((pawnPos << 8) & ~(whitePieces | blackPieces) & R3) << 8) & ~(whitePieces | blackPieces) |
-         ((((pawnPos & ~H) << 7) | ((pawnPos & ~A) << 9)) & (blackPieces | specialFlags));
+    return ((pawnPos << 8) & ~(whitePieces | blackPieces)) |
+           (((((pawnPos << 8) & ~(whitePieces | blackPieces)) & R3) << 8) & ~(whitePieces | blackPieces)) |
+           ((((pawnPos & ~H) << 7) | ((pawnPos & ~A) << 9)) & (blackPieces | specialFlags));
 }
 
 uint64_t blackPawnMoves(uint64_t& pawnPos, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t& specialFlags)
 {
-    return (pawnPos >> 8) & ~(whitePieces | blackPieces) |
-           (((pawnPos >> 8) & ~(whitePieces | blackPieces) & R6) >> 8) & ~(whitePieces | blackPieces) |
+    return ((pawnPos >> 8) & ~(whitePieces | blackPieces)) |
+           (((((pawnPos >> 8) & ~(whitePieces | blackPieces)) & R6) >> 8) & ~(whitePieces | blackPieces)) |
            ((((pawnPos & ~A) >> 7) | ((pawnPos & ~H) >> 9)) & (whitePieces | specialFlags));
 }
 
@@ -95,7 +97,38 @@ uint64_t blackPawnAttacks(uint64_t& pawnPos)
     return ((pawnPos & ~A) >> 7) | ((pawnPos & ~H) >> 9);
 }
 
-std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t& epFlags, uint16_t& castlingFlags)
+uint64_t rookAttacks(uint64_t& rookPos, uint64_t& whitePieces, uint64_t& blackPieces)
+{
+    uint64_t attacks = 0;
+    uint64_t blockers = (whitePieces | blackPieces);
+    //north
+    attacks |= Rays::rays[0][squareToSixBit.at(rookPos)];
+    if((Rays::rays[0][squareToSixBit.at(rookPos)] & blockers) != 0)
+    {
+        attacks &= ~Rays::rays[0][63 - count_trailing_zeros(Rays::rays[0][squareToSixBit.at(rookPos)] & blockers)];
+    }
+    //east
+    attacks |= Rays::rays[1][squareToSixBit.at(rookPos)];
+    if((Rays::rays[1][squareToSixBit.at(rookPos)] & blockers) != 0)
+    {
+        attacks &= ~Rays::rays[1][count_leading_zeros(Rays::rays[1][squareToSixBit.at(rookPos)] & blockers)];
+    }
+    //south
+    attacks |= Rays::rays[2][squareToSixBit.at(rookPos)];
+    if(Rays::rays[2][squareToSixBit.at(rookPos)] & blockers)
+    {
+        attacks &= ~Rays::rays[2][count_leading_zeros(Rays::rays[2][squareToSixBit.at(rookPos)] & blockers)];
+    }
+    //west
+    attacks |= Rays::rays[3][squareToSixBit.at(rookPos)];
+    if(Rays::rays[3][squareToSixBit.at(rookPos)] & blockers)
+    {
+        attacks &= ~Rays::rays[3][63 - count_trailing_zeros(Rays::rays[3][squareToSixBit.at(rookPos)] & blockers)];
+    }
+    return attacks;
+}
+
+std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t rooks, uint64_t& epFlags, uint16_t& castlingFlags)
 {
     std::vector<Move> moves;
     //black to move
@@ -155,6 +188,21 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
             pawns ^= currMove;
         }
 
+        uint64_t rookMoves;
+        while((rooks & -rooks) > 0)
+        {
+            uint64_t currMove = (rooks & -rooks);
+            rookMoves = rookAttacks(currMove, whitePieces, blackPieces);
+            //can't capture own pieces
+            rookMoves &= ~blackPieces;
+            while((rookMoves & -rookMoves) > 0)
+            {
+                moves.push_back(Move(rookMoves & -rookMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(rookMoves & -rookMoves)) << 4), 2, true) );
+                rookMoves ^= (rookMoves & -rookMoves);
+            }
+            rooks ^= currMove;
+        }
+
     }
     else
     {
@@ -212,6 +260,22 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
             }
             pawns ^= currMove;
         }
+
+        uint64_t rookMoves;
+        while((rooks & -rooks) > 0)
+        {
+            uint64_t currMove = (rooks & -rooks);
+            rookMoves = rookAttacks(currMove, whitePieces, blackPieces);
+            //can't capture own pieces
+            rookMoves &= ~whitePieces;
+            while((rookMoves & -rookMoves) > 0)
+            {
+                moves.push_back(Move(rookMoves & -rookMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(rookMoves & -rookMoves)) << 4), 2, false) );
+                rookMoves ^= (rookMoves & -rookMoves);
+            }
+            rooks ^= currMove;
+        }
+
     }
     return moves;
 }
@@ -303,14 +367,31 @@ void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t 
                     pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
                 }
             }
-
-
             myPieces ^= move.absoluteMove;
         }
     }
 }
 
+uint64_t Rays::rays[8][64];
+void Rays::initializeRays()
+{
+    for(int square = 0; square < 64; square++)
+    {
+        Rays::rays[0][63-square] = (uint64_t)0x0101010101010100 << square;
+        Rays::rays[2][square] = (uint64_t)0x0080808080808080 >> square;
+        Rays::rays[1][square] = ((uint64_t)0x7F00000000000000 >> square) & ranks[square / 8];
+        Rays::rays[3][63-square] = ((uint64_t)(0x00000000000000FE) << square) & ranks[7-(square / 8)];
+    }
+    std::cout << "initialized rays" << std::endl;
+}
 
+uint64_t count_leading_zeros(uint64_t src)
+{
+    return __builtin_clzll(src);
+}
 
-
+uint64_t count_trailing_zeros(uint64_t src)
+{
+    return __builtin_ctzll(src);
+}
 

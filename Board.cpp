@@ -24,6 +24,10 @@ void Board::printBoard() const
                 std::cout << "N ";
             else if((blackKnights >> ((i*8) + j) & 0b1) == 0b1)
                 std::cout << "n ";
+            else if((whiteRooks >> ((i*8) + j) & 0b1) == 0b1)
+                std::cout << "R ";
+            else if((blackRooks >> ((i*8) + j) & 0b1) == 0b1)
+                std::cout << "r ";
             else
                 std::cout << "· ";
         }
@@ -33,15 +37,17 @@ void Board::printBoard() const
 
 Board::Board()
 {
-    whitePieces =  0x000000000000ff4A;
+    whitePieces =  0x000000000000ffCB;
     whiteKing =    0x0000000000000008;
     whitePawns =   0x000000000000ff00;
     whiteKnights = 0x0000000000000042;
+    whiteRooks =   0x0000000000000081;
 
-    blackPieces =  0x4Aff000000000000;
+    blackPieces =  0xCBff000000000000;
     blackKing =    0x0800000000000000;
     blackPawns =   0x00ff000000000000;
     blackKnights = 0x4200000000000000;
+    blackRooks =   0x8100000000000000;
 
     color = false;
 
@@ -55,13 +61,13 @@ std::vector<Move> Board::legalMoves()
 {
     if(color)
     {
-        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, epFlags, castlingFlags);
+        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, blackRooks, epFlags, castlingFlags);
         filterLegalMoves(moves, color, blackPieces, whitePieces, blackKing, whiteKing, whiteKnights, whitePawns);
         return moves;
     }
     else
     {
-        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, epFlags, castlingFlags);
+        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, whiteRooks, epFlags, castlingFlags);
         filterLegalMoves(moves, color, whitePieces, blackPieces, whiteKing, blackKing, blackKnights, blackPawns);
         return moves;
     }
@@ -84,6 +90,23 @@ void Board::makeMove(Move move)
         {
             //king
             blackKing = move.absoluteMove;
+            if(move.getFlags() == 0b0010)
+            {
+                //kingside castling: update rook and pieces.
+                blackRooks ^= H8;
+                blackRooks ^= F8;
+                blackPieces ^= H8;
+                blackPieces ^= F8;
+            }
+            if(move.getFlags() == 0b0011)
+            {
+                //queenside castling: update rook and pieces.
+                blackRooks ^= A8;
+                blackRooks ^= D8;
+                blackPieces ^= A8;
+                blackPieces ^= D8;
+            }
+            castlingFlags &= 0b1100;
         }
         else if(move.piece == 4)
         {
@@ -108,6 +131,20 @@ void Board::makeMove(Move move)
                 toSquare = toSquare << 8;
             }
         }
+        else if(move.piece == 2)
+        {
+            //rooks
+            blackRooks ^= fromSquare;
+            blackRooks += toSquare;
+            if(fromSquare == A8)
+            {
+                castlingFlags &= 0b0111;
+            }
+            else if(fromSquare == H8)
+            {
+                castlingFlags &= 0b1011;
+            }
+        }
 
         //captures
         if((whiteKing & toSquare) != 0)
@@ -116,6 +153,8 @@ void Board::makeMove(Move move)
             whiteKnights ^= toSquare;
         if((whitePawns & toSquare) != 0)
             whitePawns ^= toSquare;
+        if((whiteRooks & toSquare) != 0)
+            whitePieces ^= toSquare;
         if((whitePieces & toSquare) != 0)
             whitePieces ^= toSquare;
 
@@ -129,6 +168,23 @@ void Board::makeMove(Move move)
         {
             //king
             whiteKing = move.absoluteMove;
+            if(move.getFlags() == 0b0010)
+            {
+                //kingside castling: update rook and pieces.
+                whiteRooks ^= H1;
+                whiteRooks ^= F1;
+                whitePieces ^= H1;
+                whitePieces ^= F1;
+            }
+            if(move.getFlags() == 0b0011)
+            {
+                //queenside castling: update rook and pieces.
+                whiteRooks ^= A1;
+                whiteRooks ^= D1;
+                whitePieces ^= A1;
+                whitePieces ^= D1;
+            }
+            castlingFlags &= 0b0011;
         }
         else if(move.piece == 4)
         {
@@ -153,6 +209,20 @@ void Board::makeMove(Move move)
                 toSquare = toSquare >> 8;
             }
         }
+        else if(move.piece == 2)
+        {
+            //rooks
+            whiteRooks ^= fromSquare;
+            whiteRooks += toSquare;
+            if(fromSquare == A1)
+            {
+                castlingFlags &= 0b0111;
+            }
+            else if(fromSquare == H1)
+            {
+                castlingFlags &= 0b1011;
+            }
+        }
 
         if((blackKing & toSquare) != 0)
             blackKing ^= toSquare;
@@ -160,6 +230,8 @@ void Board::makeMove(Move move)
             blackKnights ^= toSquare;
         if((blackPawns & toSquare) != 0)
             blackPawns ^= toSquare;
+        if((blackRooks & toSquare) != 0)
+            blackRooks ^= toSquare;
         if((blackPieces & toSquare) != 0)
             blackPieces ^= toSquare;
     }
@@ -167,5 +239,18 @@ void Board::makeMove(Move move)
     moveHistory.push_back(move);
 }
 
+void Board::printMoveset(uint64_t moveSet) {
+    for(int i = 7; i >= 0; i--)
+    {
+        for (int j = 7; j >= 0; j--)
+        {
+            if ((moveSet >> ((i * 8) + j) & 0b1) == 0b1)
+                std::cout << "X ";
+            else
+                std::cout << ". ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
 
-#include "Board.h"

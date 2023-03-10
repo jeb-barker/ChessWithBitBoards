@@ -22,9 +22,12 @@ public:
     uint64_t blackKnights;
     uint64_t whitePawns;
     uint64_t blackPawns;
+    uint64_t whiteRooks;
+    uint64_t blackRooks;
     bool color;
 
     void printBoard() const;
+    static void printMoveset(uint64_t moveSet) ;
 
     Board();
 

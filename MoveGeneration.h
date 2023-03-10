@@ -30,7 +30,7 @@ const uint64_t R3 = 0x0000000000ff0000;
 const uint64_t R2 = 0x000000000000ff00;
 const uint64_t R1 = 0x00000000000000ff;
 
-//Sqconst uares
+//Squares
 const uint64_t A1 = A & R1;
 const uint64_t A2 = A & R2;
 const uint64_t A3 = A & R3;
@@ -103,17 +103,30 @@ const uint64_t H6 = H & R6;
 const uint64_t H7 = H & R7;
 const uint64_t H8 = H & R8;
 
+const uint64_t files[8] = {
+        A,B,C,D,E,F,G,H
+};
+const uint64_t ranks[8] = {
+        R8,R7,R6,R5,R4,R3,R2,R1
+};
+
+namespace Rays
+{
+    extern uint64_t rays[8][64];
+    void initializeRays();
+}
+
 //uint64_t squares --> 6 bit representation
 #include <unordered_map>
 const std::unordered_map<uint64_t, uint16_t> squareToSixBit = {
         {A8,0 },{B8,1 },{C8, 2 },{D8,3},{E8, 4},{F8, 5},{G8, 6},{H8, 7},
         {A7,8 },{B7,9 },{C7,10},{D7,11},{E7,12},{F7,13},{G7,14},{H7,15},
         {A6,16},{B6,17},{C6,18},{D6,19},{E6,20},{F6,21},{G6,22},{H6,23},
-        {A5,24},{B5,25},{C5,25},{D5,27},{E5,28},{F5,29},{G5,30},{H5,31},
+        {A5,24},{B5,25},{C5,26},{D5,27},{E5,28},{F5,29},{G5,30},{H5,31},
         {A4,32},{B4,33},{C4,34},{D4,35},{E4,36},{F4,37},{G4,38},{H4,39},
-        {A3,40},{B3,41},{C3,43},{D3,43},{E3,44},{F3,45},{G3,46},{H3,47},
-        {A2,48},{B2,49},{C2,52},{D2,51},{E2,52},{F2,53},{G2,54},{H2,55},
-        {A1,56},{B1,57},{C1,51},{D1,59},{E1,60},{F1,61},{G1,62},{H1,63},
+        {A3,40},{B3,41},{C3,42},{D3,43},{E3,44},{F3,45},{G3,46},{H3,47},
+        {A2,48},{B2,49},{C2,50},{D2,51},{E2,52},{F2,53},{G2,54},{H2,55},
+        {A1,56},{B1,57},{C1,58},{D1,59},{E1,60},{F1,61},{G1,62},{H1,63},
 };
 const uint64_t sixBitToSquare[64] = {
         A8, B8, C8,D8, E8, F8, G8, H8,
@@ -159,13 +172,18 @@ uint64_t blackPawnMoves(uint64_t& pawnPos, uint64_t& whitePieces, uint64_t& blac
 uint64_t whitePawnAttacks(uint64_t& pawnPos);
 uint64_t blackPawnAttacks(uint64_t& pawnPos);
 
+
 //TODO: sliding piece moves
+uint64_t rookAttacks(uint64_t& rookPos, uint64_t& whitePieces, uint64_t& blackPieces);
+
+uint64_t count_leading_zeros(uint64_t src);
+uint64_t count_trailing_zeros(uint64_t src);
 
 //full pseudo-legal move generation:
 /**
  * @param color true for black false for white.
  */
-std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t& epFlags, uint16_t& castlingFlags);
+std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t rooks, uint64_t& epFlags, uint16_t& castlingFlags);
 void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t myPieces, uint64_t oppPieces, uint64_t kingPos, uint64_t oppKingPos, uint64_t oppKnights, uint64_t oppPawns);
 
 
