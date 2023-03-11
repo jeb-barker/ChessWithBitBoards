@@ -175,17 +175,25 @@ uint64_t blackPawnAttacks(uint64_t& pawnPos);
 
 //TODO: sliding piece moves
 uint64_t rookAttacks(uint64_t& rookPos, uint64_t& whitePieces, uint64_t& blackPieces);
+uint64_t bishopAttacks(uint64_t& bishopPos, uint64_t& whitePieces, uint64_t& blackPieces);
+uint64_t queenAttacks(uint64_t queenPos, uint64_t whitePieces, uint64_t blackPieces);
 
 uint64_t count_leading_zeros(uint64_t src);
 uint64_t count_trailing_zeros(uint64_t src);
 
-//full pseudo-legal move generation:
-/**
- * @param color true for black false for white.
- */
-std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& blackPieces, uint64_t kingPos, uint64_t knights, uint64_t pawns, uint64_t rooks, uint64_t& epFlags, uint16_t& castlingFlags);
-void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t myPieces, uint64_t oppPieces, uint64_t kingPos, uint64_t oppKingPos, uint64_t oppKnights, uint64_t oppPawns, uint64_t oppRooks);
+namespace MoveGeneration {
+    //full pseudo-legal move generation:
+    /**
+     * @param color true for black false for white.
+     */
+    std::vector<Move>
+    pseudoLegalMoves(bool color, uint64_t &whitePieces, uint64_t &blackPieces, uint64_t kingPos, uint64_t knights,
+                     uint64_t pawns, uint64_t rooks, uint64_t bishops, uint64_t queens, uint64_t &epFlags, uint16_t &castlingFlags);
 
+    void filterLegalMoves(std::vector<Move> &pseudoLegalMoves, bool color, uint64_t myPieces, uint64_t oppPieces,
+                          uint64_t kingPos, uint64_t oppKingPos, uint64_t oppKnights, uint64_t oppPawns,
+                          uint64_t oppRooks, uint64_t oppBishops, uint64_t oppQueens);
+}
 
 #endif //CHESSWITHBITBOARDS_MOVEGENERATION_H
 

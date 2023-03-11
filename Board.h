@@ -24,14 +24,19 @@ public:
     uint64_t blackPawns;
     uint64_t whiteRooks;
     uint64_t blackRooks;
+    uint64_t whiteBishops;
+    uint64_t blackBishops;
+    uint64_t whiteQueens;
+    uint64_t blackQueens;
     bool color;
 
     void printBoard() const;
-    static void printMoveset(uint64_t moveSet) ;
+    static void printMoveset(uint64_t moveSet);
 
     Board();
 
     std::vector<Move> legalMoves();
+    void filterLegalMoves(std::vector<Move>& pseudoLegalMoves);
 
     void makeMove(Move move);
 

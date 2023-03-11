@@ -28,6 +28,14 @@ void Board::printBoard() const
                 std::cout << "R ";
             else if((blackRooks >> ((i*8) + j) & 0b1) == 0b1)
                 std::cout << "r ";
+            else if((whiteBishops >> ((i*8) + j) & 0b1) == 0b1)
+                std::cout << "B ";
+            else if((blackBishops >> ((i*8) + j) & 0b1) == 0b1)
+                std::cout << "b ";
+            else if((whiteQueens >> ((i*8) + j) & 0b1) == 0b1)
+                std::cout << "Q ";
+            else if((blackQueens >> ((i*8) + j) & 0b1) == 0b1)
+                std::cout << "q ";
             else
                 std::cout << "· ";
         }
@@ -37,17 +45,21 @@ void Board::printBoard() const
 
 Board::Board()
 {
-    whitePieces =  0x000000000000ffCB;
+    whitePieces =  0x000000000000ffff;
     whiteKing =    0x0000000000000008;
     whitePawns =   0x000000000000ff00;
     whiteKnights = 0x0000000000000042;
     whiteRooks =   0x0000000000000081;
+    whiteBishops = 0x0000000000000024;
+    whiteQueens =  0x0000000000000010;
 
-    blackPieces =  0xCBff000000000000;
+    blackPieces =  0xffff000000000000;
     blackKing =    0x0800000000000000;
     blackPawns =   0x00ff000000000000;
     blackKnights = 0x4200000000000000;
     blackRooks =   0x8100000000000000;
+    blackBishops = 0x2400000000000000;
+    blackQueens =  0x1000000000000000;
 
     color = false;
 
@@ -61,14 +73,14 @@ std::vector<Move> Board::legalMoves()
 {
     if(color)
     {
-        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, blackRooks, epFlags, castlingFlags);
-        filterLegalMoves(moves, color, blackPieces, whitePieces, blackKing, whiteKing, whiteKnights, whitePawns, whiteRooks);
+        std::vector<Move> moves = MoveGeneration::pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, blackRooks, blackBishops, blackQueens, epFlags, castlingFlags);
+        MoveGeneration::filterLegalMoves(moves, color, blackPieces, whitePieces, blackKing, whiteKing, whiteKnights, whitePawns, whiteRooks, whiteBishops, whiteQueens);
         return moves;
     }
     else
     {
-        std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, whiteRooks, epFlags, castlingFlags);
-        filterLegalMoves(moves, color, whitePieces, blackPieces, whiteKing, blackKing, blackKnights, blackPawns, blackRooks);
+        std::vector<Move> moves = MoveGeneration::pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, whiteRooks, whiteBishops, whiteQueens, epFlags, castlingFlags);
+        MoveGeneration::filterLegalMoves(moves, color, whitePieces, blackPieces, whiteKing, blackKing, blackKnights, blackPawns, blackRooks, blackBishops, blackQueens);
         return moves;
     }
 }
@@ -124,6 +136,7 @@ void Board::makeMove(Move move)
             //en passant
             if(((fromSquare & R7) != 0) & ((toSquare & R5) != 0))
             {
+                //to undo this you need to go back two moves.
                 epFlags = fromSquare >> 8;
             }
             if(move.getFlags() == 0b0101)
@@ -145,6 +158,12 @@ void Board::makeMove(Move move)
                 castlingFlags &= 0b1011;
             }
         }
+        else if(move.piece == 3)
+        {
+            //bishops
+            blackBishops ^= fromSquare;
+            blackBishops ^= toSquare;
+        }
 
         //captures
         if((whiteKing & toSquare) != 0)
@@ -155,6 +174,8 @@ void Board::makeMove(Move move)
             whitePawns ^= toSquare;
         if((whiteRooks & toSquare) != 0)
             whitePieces ^= toSquare;
+        if((whiteBishops & toSquare) != 0)
+            whiteBishops ^= toSquare;
         if((whitePieces & toSquare) != 0)
             whitePieces ^= toSquare;
 
@@ -223,6 +244,12 @@ void Board::makeMove(Move move)
                 castlingFlags &= 0b1011;
             }
         }
+        else if(move.piece == 3)
+        {
+            //bishops
+            whiteBishops ^= fromSquare;
+            whiteBishops ^= toSquare;
+        }
 
         if((blackKing & toSquare) != 0)
             blackKing ^= toSquare;
@@ -232,12 +259,71 @@ void Board::makeMove(Move move)
             blackPawns ^= toSquare;
         if((blackRooks & toSquare) != 0)
             blackRooks ^= toSquare;
+        if((blackBishops & toSquare) != 0)
+            blackBishops ^= toSquare;
         if((blackPieces & toSquare) != 0)
             blackPieces ^= toSquare;
     }
     color = !color;
-    moveHistory.push_back(move);
+    //moveHistory.push_back(move);
 }
+
+//void Board::filterLegalMoves(std::vector<Move>& pseudoLegalMoves) {
+//    uint64_t knights;
+//    uint64_t rooks;
+//    uint64_t pawns;
+//    for (int i = 0; i < pseudoLegalMoves.size(); i++) {
+//        Move move = pseudoLegalMoves[i];
+//
+//        knights = whiteKnights;
+//        rooks = whiteRooks;
+//        pawns = whitePawns;
+//
+//        if (color) {
+//            //update king board and piece board.
+//            //kingPos ^= (move.absoluteMove & -move.absoluteMove);
+//            makeMove(move);
+//            std::vector<Move> psm;
+//            psm = MoveGeneration::pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns,
+//                                                   whiteRooks, epFlags, castlingFlags);
+//            for (Move m: psm) {
+//                if (m.getToSquare() == squareToSixBit.at(blackKing)) {
+//                    makeMove(move);
+//                    color = !color;
+//
+//                    //remove candidate move.
+//                    auto pos = pseudoLegalMoves.begin() + i;
+//                    pseudoLegalMoves.erase(pos);
+//                } else {
+//                    makeMove(move);
+//                    color = !color;
+//                }
+//            }
+//        }
+//            //white
+//        else {
+//            //update king board and piece board.
+//            //kingPos ^= (move.absoluteMove & -move.absoluteMove);
+//            makeMove(move);
+//            std::vector<Move> psm;
+//            psm = MoveGeneration::pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns,
+//                                                   whiteRooks, epFlags, castlingFlags);
+//            for (Move m: psm) {
+//                if (m.getToSquare() == squareToSixBit.at(whiteKing)) {
+//                    makeMove(move);
+//                    color = !color;
+//
+//                    //remove candidate move.
+//                    auto pos = pseudoLegalMoves.begin() + i;
+//                    pseudoLegalMoves.erase(pos);
+//                } else {
+//                    makeMove(move);
+//                    color = !color;
+//                }
+//            }
+//        }
+//    }
+//}
 
 void Board::printMoveset(uint64_t moveSet) {
     for(int i = 7; i >= 0; i--)
