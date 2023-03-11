@@ -450,8 +450,22 @@ void MoveGeneration::filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool 
                 rookAttacksint |= rookAttacks(rook, myPieces, oppPieces);
                 rooks ^= rook;
             }
+            uint64_t bishopAttacksint = 0;
+            while((bishops & -bishops) > 0)
+            {
+                uint64_t bishop = (bishops & -bishops);
+                bishopAttacksint |= bishopAttacks(bishop, myPieces, oppPieces);
+                bishops ^= bishop;
+            }
+            uint64_t queenAttacksint = 0;
+            while((queens & -queens) > 0)
+            {
+                uint64_t queen = (queens & -queens);
+                queenAttacksint |= queenAttacks(queen, myPieces, oppPieces);
+                queens ^= queen;
+            }
 
-            attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint;
+            attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint | bishopAttacksint | queenAttacksint;
             if(move.getPiece() == 0)
             {
                 if( (move.absoluteMove & attacks) != 0 )
@@ -546,7 +560,22 @@ void MoveGeneration::filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool 
                 rookAttacksint |= rookAttacks(rook, myPieces, oppPieces);
                 rooks ^= rook;
             }
-            attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint;
+            uint64_t bishopAttacksint = 0;
+            while((bishops & -bishops) > 0)
+            {
+                uint64_t bishop = (bishops & -bishops);
+                bishopAttacksint |= bishopAttacks(bishop, myPieces, oppPieces);
+                bishops ^= bishop;
+            }
+            uint64_t queenAttacksint = 0;
+            while((queens & -queens) > 0)
+            {
+                uint64_t queen = (queens & -queens);
+                queenAttacksint |= queenAttacks(queen, myPieces, oppPieces);
+                queens ^= queen;
+            }
+
+            attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint | bishopAttacksint | queenAttacksint;
             if(move.getPiece() == 0)
             {
                 if( (move.absoluteMove & attacks) != 0 )

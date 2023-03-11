@@ -164,6 +164,12 @@ void Board::makeMove(Move move)
             blackBishops ^= fromSquare;
             blackBishops ^= toSquare;
         }
+        else if(move.piece == 1)
+        {
+            //queens
+            blackQueens ^= fromSquare;
+            blackQueens ^= toSquare;
+        }
 
         //captures
         if((whiteKing & toSquare) != 0)
@@ -249,6 +255,12 @@ void Board::makeMove(Move move)
             //bishops
             whiteBishops ^= fromSquare;
             whiteBishops ^= toSquare;
+        }
+        else if(move.piece == 1)
+        {
+            //queens
+            whiteQueens ^= fromSquare;
+            whiteQueens ^= toSquare;
         }
 
         if((blackKing & toSquare) != 0)
