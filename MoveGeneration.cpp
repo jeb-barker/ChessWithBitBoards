@@ -381,6 +381,8 @@ void MoveGeneration::filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool 
     uint64_t knights;
     uint64_t rooks;
     uint64_t pawns;
+    uint64_t bishops;
+    uint64_t queens;
     for(int i = 0; i < pseudoLegalMoves.size(); i++)
     {
         Move move = pseudoLegalMoves[i];
@@ -388,6 +390,8 @@ void MoveGeneration::filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool 
         knights = oppKnights;
         rooks = oppRooks;
         pawns = oppPawns;
+        bishops = oppBishops;
+        queens = oppQueens;
 
         if(color)
         {
@@ -395,6 +399,33 @@ void MoveGeneration::filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool 
             //kingPos ^= (move.absoluteMove & -move.absoluteMove);
             myPieces ^= move.absoluteMove;
             myPieces ^= sixBitToSquare[move.getFromSquare()];
+
+            //TODO: make sure this is correct.
+            if((sixBitToSquare[move.getToSquare()] & oppKnights) != 0)
+            {
+                //captured knight.
+                knights ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppBishops) != 0)
+            {
+                //captured bishop.
+                bishops ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppRooks) != 0)
+            {
+                //captured rook.
+                rooks ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppQueens) != 0)
+            {
+                //captured queen.
+                queens ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppPawns) != 0)
+            {
+                //captured pawn.
+                pawns ^= sixBitToSquare[move.getToSquare()];
+            }
 
             //check for checks.
             uint64_t attacks = whiteKingMoves(oppKingPos, myPieces, oppPieces);
@@ -464,6 +495,33 @@ void MoveGeneration::filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool 
             //kingPos ^= (move.absoluteMove & -move.absoluteMove);
             myPieces ^= move.absoluteMove;
             myPieces ^= sixBitToSquare[move.getFromSquare()];
+
+            //TODO: make sure this is correct.
+            if((sixBitToSquare[move.getToSquare()] & oppKnights) != 0)
+            {
+                //captured knight.
+                knights ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppBishops) != 0)
+            {
+                //captured bishop.
+                bishops ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppRooks) != 0)
+            {
+                //captured rook.
+                rooks ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppQueens) != 0)
+            {
+                //captured queen.
+                queens ^= sixBitToSquare[move.getToSquare()];
+            }
+            if((sixBitToSquare[move.getToSquare()] & oppPawns) != 0)
+            {
+                //captured pawn.
+                pawns ^= sixBitToSquare[move.getToSquare()];
+            }
 
             //check for checks.
             uint64_t attacks = blackKingMoves(oppKingPos, myPieces, oppPieces);
