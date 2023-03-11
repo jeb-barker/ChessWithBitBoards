@@ -280,40 +280,66 @@ std::vector<Move> pseudoLegalMoves(bool color, uint64_t& whitePieces, uint64_t& 
     return moves;
 }
 
-void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t myPieces, uint64_t oppPieces, uint64_t kingPos, uint64_t oppKingPos, uint64_t oppKnights, uint64_t oppPawns)
+void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t myPieces, uint64_t oppPieces, uint64_t kingPos, uint64_t oppKingPos, uint64_t oppKnights, uint64_t oppPawns, uint64_t oppRooks)
 {
+    uint64_t knights;
+    uint64_t rooks;
+    uint64_t pawns;
     for(int i = 0; i < pseudoLegalMoves.size(); i++)
     {
         Move move = pseudoLegalMoves[i];
+
+        knights = oppKnights;
+        rooks = oppRooks;
+        pawns = oppPawns;
 
         if(color)
         {
             //update king board and piece board.
             //kingPos ^= (move.absoluteMove & -move.absoluteMove);
-            myPieces += move.absoluteMove;
+            myPieces ^= move.absoluteMove;
+            myPieces ^= sixBitToSquare[move.getFromSquare()];
 
             //check for checks.
             uint64_t attacks = whiteKingMoves(oppKingPos, myPieces, oppPieces);
             uint64_t knightAttacks = 0;
-            while((oppKnights & -oppKnights) > 0)
+            while((knights & -knights) > 0)
             {
-                uint64_t knight = (oppKnights & -oppKnights);
+                uint64_t knight = (knights & -knights);
                 knightAttacks |= whiteKnightMoves(knight, oppPieces, myPieces);
-                oppKnights ^= (oppKnights & -oppKnights);
+                knights ^= knight;
             }
             uint64_t pawnAttacks = 0;
-            while((oppPawns & -oppPawns) > 0)
+            while((pawns & -pawns) > 0)
             {
-                uint64_t pawn = (oppPawns & -oppPawns);
+                uint64_t pawn = (pawns & -pawns);
                 pawnAttacks |= whitePawnAttacks(pawn);
-                oppPawns ^= (oppPawns & -oppPawns);
+                pawns ^= pawn;
             }
-            attacks = attacks | knightAttacks | pawnAttacks;
+            uint64_t rookAttacksint = 0;
+            while((rooks & -rooks) > 0)
+            {
+                uint64_t rook = (rooks & -rooks);
+                rookAttacksint |= rookAttacks(rook, myPieces, oppPieces);
+                rooks ^= rook;
+            }
+
+            attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint;
             if(move.getPiece() == 0)
             {
                 if( (move.absoluteMove & attacks) != 0 )
                 {
-                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
+
+                    auto pos = pseudoLegalMoves.begin()+i;
+                    pseudoLegalMoves.erase(pos);
+                    i--;
+                }
+                else
+                {
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
                 }
                 //check all castling squares
             }
@@ -321,42 +347,67 @@ void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t 
             {
                 if( (kingPos & attacks) != 0 )
                 {
-                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
+
+                    auto pos = pseudoLegalMoves.begin()+i;
+                    pseudoLegalMoves.erase(pos);
+                    i--;
+                }
+                else
+                {
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
                 }
             }
-
-
-            myPieces ^= move.absoluteMove;
         }
         //white
         else
         {
             //update king board and piece board.
             //kingPos ^= (move.absoluteMove & -move.absoluteMove);
-            myPieces += move.absoluteMove;
+            myPieces ^= move.absoluteMove;
+            myPieces ^= sixBitToSquare[move.getFromSquare()];
 
             //check for checks.
             uint64_t attacks = blackKingMoves(oppKingPos, myPieces, oppPieces);
             uint64_t knightAttacks = 0;
-            while((oppKnights & -oppKnights) > 0)
+            while((knights & -knights) > 0)
             {
-                uint64_t knight = (oppKnights & -oppKnights);
+                uint64_t knight = (knights & -knights);
                 knightAttacks |= blackKnightMoves(knight, myPieces, oppPieces);
-                oppKnights ^= (oppKnights & -oppKnights);
+                knights ^= knight;
             }
             uint64_t pawnAttacks = 0;
-            while((oppPawns & -oppPawns) > 0)
+            while((pawns & -pawns) > 0)
             {
-                uint64_t pawn = (oppPawns & -oppPawns);
+                uint64_t pawn = (pawns & -pawns);
                 pawnAttacks |= blackPawnAttacks(pawn);
-                oppPawns ^= (oppPawns & -oppPawns);
+                pawns ^= pawn;
             }
-            attacks = attacks | knightAttacks | pawnAttacks;
+            uint64_t rookAttacksint = 0;
+            while((rooks & -rooks) > 0)
+            {
+                uint64_t rook = (rooks & -rooks);
+                rookAttacksint |= rookAttacks(rook, myPieces, oppPieces);
+                rooks ^= rook;
+            }
+            attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint;
             if(move.getPiece() == 0)
             {
                 if( (move.absoluteMove & attacks) != 0 )
                 {
-                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
+
+                    auto pos = pseudoLegalMoves.begin()+i;
+                    pseudoLegalMoves.erase(pos);
+                    i--;
+                }
+                else
+                {
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
                 }
                 //check all castling squares (and check for if king is in check now)
             }
@@ -364,10 +415,19 @@ void filterLegalMoves(std::vector<Move>& pseudoLegalMoves, bool color, uint64_t 
             {
                 if( (kingPos & attacks) != 0 )
                 {
-                    pseudoLegalMoves.erase(pseudoLegalMoves.begin()+i);
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
+
+                    auto pos = pseudoLegalMoves.begin()+i;
+                    pseudoLegalMoves.erase(pos);
+                    i--;
+                }
+                else
+                {
+                    myPieces ^= move.absoluteMove;
+                    myPieces ^= sixBitToSquare[move.getFromSquare()];
                 }
             }
-            myPieces ^= move.absoluteMove;
         }
     }
 }

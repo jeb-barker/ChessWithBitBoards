@@ -62,13 +62,13 @@ std::vector<Move> Board::legalMoves()
     if(color)
     {
         std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, blackKing, blackKnights, blackPawns, blackRooks, epFlags, castlingFlags);
-        filterLegalMoves(moves, color, blackPieces, whitePieces, blackKing, whiteKing, whiteKnights, whitePawns);
+        filterLegalMoves(moves, color, blackPieces, whitePieces, blackKing, whiteKing, whiteKnights, whitePawns, whiteRooks);
         return moves;
     }
     else
     {
         std::vector<Move> moves = pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns, whiteRooks, epFlags, castlingFlags);
-        filterLegalMoves(moves, color, whitePieces, blackPieces, whiteKing, blackKing, blackKnights, blackPawns);
+        filterLegalMoves(moves, color, whitePieces, blackPieces, whiteKing, blackKing, blackKnights, blackPawns, blackRooks);
         return moves;
     }
 }
@@ -85,7 +85,7 @@ void Board::makeMove(Move move)
     {
         //all pieces
         blackPieces ^= fromSquare;
-        blackPieces += toSquare;
+        blackPieces ^= toSquare;
         if(move.piece == 0)
         {
             //king
@@ -112,14 +112,14 @@ void Board::makeMove(Move move)
         {
             //knights
             blackKnights ^= fromSquare;
-            blackKnights += toSquare;
+            blackKnights ^= toSquare;
         }
         else if(move.piece == 5)
         {
             //pawns
             //en-passant and promotion should be handled here.
             blackPawns ^= fromSquare;
-            blackPawns += toSquare;
+            blackPawns ^= toSquare;
 
             //en passant
             if(((fromSquare & R7) != 0) & ((toSquare & R5) != 0))
@@ -135,7 +135,7 @@ void Board::makeMove(Move move)
         {
             //rooks
             blackRooks ^= fromSquare;
-            blackRooks += toSquare;
+            blackRooks ^= toSquare;
             if(fromSquare == A8)
             {
                 castlingFlags &= 0b0111;
@@ -163,7 +163,7 @@ void Board::makeMove(Move move)
     {
         //all pieces
         whitePieces ^= fromSquare;
-        whitePieces += toSquare;
+        whitePieces ^= toSquare;
         if(move.piece == 0)
         {
             //king
@@ -190,13 +190,13 @@ void Board::makeMove(Move move)
         {
             //knights
             whiteKnights ^= fromSquare;
-            whiteKnights += toSquare;
+            whiteKnights ^= toSquare;
         }
         else if(move.piece == 5)
         {
             //pawns
             whitePawns ^= fromSquare;
-            whitePawns += toSquare;
+            whitePawns ^= toSquare;
 
             //en passant should be "turned on"
             if(((fromSquare & R2) != 0) & ((toSquare & R4) != 0))
@@ -213,7 +213,7 @@ void Board::makeMove(Move move)
         {
             //rooks
             whiteRooks ^= fromSquare;
-            whiteRooks += toSquare;
+            whiteRooks ^= toSquare;
             if(fromSquare == A1)
             {
                 castlingFlags &= 0b0111;
