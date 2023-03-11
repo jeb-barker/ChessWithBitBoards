@@ -7,7 +7,10 @@ int main() {
     Board b = Board();
     //initialize rays
     Rays::initializeRays();
-    uint64_t a = H1;
+    uint64_t a = E4;
+    uint64_t aa = G2;
+    uint64_t aaa = 0;
+    Board::printMoveset(queenAttacks(a, aa, aaa));
     std::vector<Move> moves;
     int index;
     while(true)
