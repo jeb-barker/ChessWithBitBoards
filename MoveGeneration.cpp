@@ -24,7 +24,7 @@ Move kingsideCastle(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPie
     {
         return Move(kingPos >> 2, (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingPos >> 2)) << 4) + 0b0010, 0, color);
     }
-    return Move(0,0,-1,0);
+    return Move(0,0,-1,false);
 }
 
 Move queensideCastle(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces, bool color)
@@ -34,7 +34,7 @@ Move queensideCastle(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPi
     {
         return Move(kingPos << 2, (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingPos << 2)) << 4) + 0b0011, 0, color);
     }
-    return Move(0,0,-1,0);
+    return Move(0,0,-1,false);
 }
 
 uint64_t blackKingMoves(uint64_t& kingPos, uint64_t& whitePieces, uint64_t& blackPieces)
@@ -174,7 +174,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
         uint64_t kingMoves = blackKingMoves(kingPos, whitePieces, blackPieces);
         while((kingMoves & -kingMoves) > 0)
         {
-            moves.push_back(Move((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0, true));
+            moves.emplace_back((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0, true);
             kingMoves ^= (kingMoves & -kingMoves);
         }
         //kingside castling:
@@ -199,7 +199,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
 
             while((knightMoves & -knightMoves) > 0)
             {
-                moves.push_back(Move(knightMoves & -knightMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(knightMoves & -knightMoves)) << 4), 4, true) );
+                moves.emplace_back(knightMoves & -knightMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(knightMoves & -knightMoves)) << 4), 4, true );
                 knightMoves ^= (knightMoves & -knightMoves);
             }
             knights ^= currMove;
@@ -218,7 +218,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
                 {
                     ep = 0b0101;
                 }
-                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, true) );
+                moves.emplace_back(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, true );
                 pawnMoves ^= (pawnMoves & -pawnMoves);
             }
             pawns ^= currMove;
@@ -233,7 +233,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             rookMoves &= ~blackPieces;
             while((rookMoves & -rookMoves) > 0)
             {
-                moves.push_back(Move(rookMoves & -rookMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(rookMoves & -rookMoves)) << 4), 2, true) );
+                moves.emplace_back(rookMoves & -rookMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(rookMoves & -rookMoves)) << 4), 2, true );
                 rookMoves ^= (rookMoves & -rookMoves);
             }
             rooks ^= currMove;
@@ -248,7 +248,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             bishopMoves &= ~blackPieces;
             while((bishopMoves & -bishopMoves) > 0)
             {
-                moves.push_back(Move(bishopMoves & -bishopMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(bishopMoves & -bishopMoves)) << 4), 3, true) );
+                moves.emplace_back(bishopMoves & -bishopMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(bishopMoves & -bishopMoves)) << 4), 3, true );
                 bishopMoves ^= (bishopMoves & -bishopMoves);
             }
             bishops ^= currMove;
@@ -263,7 +263,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             queenMoves &= ~blackPieces;
             while((queenMoves & -queenMoves) > 0)
             {
-                moves.push_back(Move(queenMoves & -queenMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(queenMoves & -queenMoves)) << 4), 1, true) );
+                moves.emplace_back(queenMoves & -queenMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(queenMoves & -queenMoves)) << 4), 1, true );
                 queenMoves ^= (queenMoves & -queenMoves);
             }
             queens ^= currMove;
@@ -275,7 +275,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
         uint64_t kingMoves = whiteKingMoves(kingPos, whitePieces, blackPieces);
         while((kingMoves & -kingMoves) > 0)
         {
-            moves.push_back(Move((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0, false));
+            moves.emplace_back((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0, false);
             kingMoves ^= (kingMoves & -kingMoves);
         }
 
@@ -302,7 +302,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
 
             while((knightMoves & -knightMoves) > 0)
             {
-                moves.push_back(Move(knightMoves & -knightMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(knightMoves & -knightMoves)) << 4), 4, false) );
+                moves.emplace_back(knightMoves & -knightMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(knightMoves & -knightMoves)) << 4), 4, false );
                 knightMoves ^= (knightMoves & -knightMoves);
             }
             knights ^= currMove;
@@ -321,7 +321,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
                 {
                     ep = 0b0101;
                 }
-                moves.push_back(Move(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, false) );
+                moves.emplace_back(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, false );
                 pawnMoves ^= (pawnMoves & -pawnMoves);
             }
             pawns ^= currMove;
@@ -336,7 +336,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             rookMoves &= ~whitePieces;
             while((rookMoves & -rookMoves) > 0)
             {
-                moves.push_back(Move(rookMoves & -rookMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(rookMoves & -rookMoves)) << 4), 2, false) );
+                moves.emplace_back(rookMoves & -rookMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(rookMoves & -rookMoves)) << 4), 2, false );
                 rookMoves ^= (rookMoves & -rookMoves);
             }
             rooks ^= currMove;
@@ -351,7 +351,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             bishopMoves &= ~whitePieces;
             while((bishopMoves & -bishopMoves) > 0)
             {
-                moves.push_back(Move(bishopMoves & -bishopMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(bishopMoves & -bishopMoves)) << 4), 3, false) );
+                moves.emplace_back(bishopMoves & -bishopMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(bishopMoves & -bishopMoves)) << 4), 3, false );
                 bishopMoves ^= (bishopMoves & -bishopMoves);
             }
             bishops ^= currMove;
@@ -366,7 +366,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             queenMoves &= ~whitePieces;
             while((queenMoves & -queenMoves) > 0)
             {
-                moves.push_back(Move(queenMoves & -queenMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(queenMoves & -queenMoves)) << 4), 1, false) );
+                moves.emplace_back(queenMoves & -queenMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(queenMoves & -queenMoves)) << 4), 1, false );
                 queenMoves ^= (queenMoves & -queenMoves);
             }
             queens ^= currMove;
@@ -667,4 +667,3 @@ uint64_t count_trailing_zeros(uint64_t src)
 {
     return __builtin_ctzll(src);
 }
-
