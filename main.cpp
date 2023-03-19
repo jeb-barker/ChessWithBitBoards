@@ -14,7 +14,7 @@ int main() {
     Board::printMoveset(queenAttacks(a, aa, aaa));
     std::vector<Move> moves;
     int index;
-    bool playerColor = false;
+    bool playerColor = true;
     while(true)
     {
         b.printBoard();
@@ -39,7 +39,7 @@ int main() {
         }
         else
         {
-            Move m = ChessAI::alphaBeta(b, 0, 5, 0, b.color);
+            Move m = ChessAI::alphaBeta(b, 3, 5, 0, b.color);
             b.makeMove(m);
         }
     }

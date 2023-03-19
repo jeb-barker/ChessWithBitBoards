@@ -93,7 +93,7 @@ MoveEval ChessAI::maxValue(Board board, int alpha, int beta, Move move, int dept
 
 Move ChessAI::alphaBeta(Board board, int minDepth, int maxDepth, int maxTime, bool color) {
     MoveEval currentMove = MoveEval();
-    for(int d = 1; d <= maxDepth; d++)
+    for(int d = minDepth; d <= maxDepth; d++)
     {
         auto t1 = std::chrono::high_resolution_clock::now();
         if (color)

@@ -286,65 +286,8 @@ void Board::makeMove(Move move)
             blackPieces ^= toSquare;
     }
     color = !color;
-    //moveHistory.push_back(move);
+    //moveHistory.emplace_back(move);
 }
-
-//void Board::filterLegalMoves(std::vector<Move>& pseudoLegalMoves) {
-//    uint64_t knights;
-//    uint64_t rooks;
-//    uint64_t pawns;
-//    for (int i = 0; i < pseudoLegalMoves.size(); i++) {
-//        Move move = pseudoLegalMoves[i];
-//
-//        knights = whiteKnights;
-//        rooks = whiteRooks;
-//        pawns = whitePawns;
-//
-//        if (color) {
-//            //update king board and piece board.
-//            //kingPos ^= (move.absoluteMove & -move.absoluteMove);
-//            makeMove(move);
-//            std::vector<Move> psm;
-//            psm = MoveGeneration::pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns,
-//                                                   whiteRooks, epFlags, castlingFlags);
-//            for (Move m: psm) {
-//                if (m.getToSquare() == squareToSixBit.at(blackKing)) {
-//                    makeMove(move);
-//                    color = !color;
-//
-//                    //remove candidate move.
-//                    auto pos = pseudoLegalMoves.begin() + i;
-//                    pseudoLegalMoves.erase(pos);
-//                } else {
-//                    makeMove(move);
-//                    color = !color;
-//                }
-//            }
-//        }
-//            //white
-//        else {
-//            //update king board and piece board.
-//            //kingPos ^= (move.absoluteMove & -move.absoluteMove);
-//            makeMove(move);
-//            std::vector<Move> psm;
-//            psm = MoveGeneration::pseudoLegalMoves(color, whitePieces, blackPieces, whiteKing, whiteKnights, whitePawns,
-//                                                   whiteRooks, epFlags, castlingFlags);
-//            for (Move m: psm) {
-//                if (m.getToSquare() == squareToSixBit.at(whiteKing)) {
-//                    makeMove(move);
-//                    color = !color;
-//
-//                    //remove candidate move.
-//                    auto pos = pseudoLegalMoves.begin() + i;
-//                    pseudoLegalMoves.erase(pos);
-//                } else {
-//                    makeMove(move);
-//                    color = !color;
-//                }
-//            }
-//        }
-//    }
-//}
 
 void Board::printMoveset(uint64_t moveSet) {
     for(int i = 7; i >= 0; i--)
