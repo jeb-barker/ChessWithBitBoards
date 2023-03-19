@@ -1,6 +1,7 @@
 #include <iostream>
 #include "MoveGeneration.h"
 #include "Board.h"
+#include "ChessAI.h"
 
 int main() {
     //initialize board.
@@ -13,26 +14,34 @@ int main() {
     Board::printMoveset(queenAttacks(a, aa, aaa));
     std::vector<Move> moves;
     int index;
+    bool playerColor = false;
     while(true)
     {
         b.printBoard();
         std::cout << std::endl;
         moves = b.legalMoves();
 
-        index = 0;
-        for(Move m : moves)
+        if(playerColor == b.color)
         {
-            std::cout << index << ": " << pieceNames[m.getPiece()] << " " << squareNames[m.getFromSquare()] << " --> " << squareNames[m.getToSquare()] << std::endl;
-            index++;
-        }
+            index = 0;
+            for (Move m: moves) {
+                std::cout << index << ": " << pieceNames[m.getPiece()] << " " << squareNames[m.getFromSquare()]
+                          << " --> " << squareNames[m.getToSquare()] << std::endl;
+                index++;
+            }
 
-        int move = -1;
-        while(!(std::cin >> move) || ((move < 0) || (move >= moves.size())))
-        {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+            int move = -1;
+            while (!(std::cin >> move) || ((move < 0) || (move >= moves.size()))) {
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+            b.makeMove(moves[move]);
         }
-        b.makeMove(moves[move]);
+        else
+        {
+            Move m = ChessAI::alphaBeta(b, 0, 5, 0, b.color);
+            b.makeMove(m);
+        }
     }
     return 0;
 }
