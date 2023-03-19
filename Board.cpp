@@ -41,6 +41,7 @@ void Board::printBoard() const
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
 }
 
 Board::Board()
@@ -87,6 +88,10 @@ std::vector<Move> Board::legalMoves()
 
 void Board::makeMove(Move move)
 {
+    if(move.absoluteMove == 0)
+    {
+        return;
+    }
     uint64_t fromSquare = sixBitToSquare[move.getFromSquare()];
     uint64_t toSquare = sixBitToSquare[move.getToSquare()];
     if(epFlags != 0)
@@ -164,6 +169,12 @@ void Board::makeMove(Move move)
             blackBishops ^= fromSquare;
             blackBishops ^= toSquare;
         }
+        else if(move.piece == 1)
+        {
+            //queens
+            blackQueens ^= fromSquare;
+            blackQueens ^= toSquare;
+        }
 
         //captures
         if((whiteKing & toSquare) != 0)
@@ -176,6 +187,8 @@ void Board::makeMove(Move move)
             whitePieces ^= toSquare;
         if((whiteBishops & toSquare) != 0)
             whiteBishops ^= toSquare;
+        if((whiteQueens & toSquare) != 0)
+            whiteQueens ^= toSquare;
         if((whitePieces & toSquare) != 0)
             whitePieces ^= toSquare;
 
@@ -250,6 +263,12 @@ void Board::makeMove(Move move)
             whiteBishops ^= fromSquare;
             whiteBishops ^= toSquare;
         }
+        else if(move.piece == 1)
+        {
+            //queens
+            whiteQueens ^= fromSquare;
+            whiteQueens ^= toSquare;
+        }
 
         if((blackKing & toSquare) != 0)
             blackKing ^= toSquare;
@@ -261,6 +280,8 @@ void Board::makeMove(Move move)
             blackRooks ^= toSquare;
         if((blackBishops & toSquare) != 0)
             blackBishops ^= toSquare;
+        if((blackQueens & toSquare) != 0)
+            blackQueens ^= toSquare;
         if((blackPieces & toSquare) != 0)
             blackPieces ^= toSquare;
     }
