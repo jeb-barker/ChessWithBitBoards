@@ -40,9 +40,14 @@ public:
 
     void makeMove(Move move);
 
+    bool isGameOver();
+    bool isThreefoldRepetition();
+    bool equals(Board other);
+
 private:
     uint64_t epFlags;
     uint16_t castlingFlags;
+
 };
 
 

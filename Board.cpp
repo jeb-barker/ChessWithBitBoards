@@ -156,11 +156,11 @@ void Board::makeMove(Move move)
             blackRooks ^= toSquare;
             if(fromSquare == A8)
             {
-                castlingFlags &= 0b0111;
+                castlingFlags &= 0b1101;
             }
             else if(fromSquare == H8)
             {
-                castlingFlags &= 0b1011;
+                castlingFlags &= 0b1110;
             }
         }
         else if(move.piece == 3)
@@ -286,7 +286,7 @@ void Board::makeMove(Move move)
             blackPieces ^= toSquare;
     }
     color = !color;
-    //moveHistory.emplace_back(move);
+    moveHistory.emplace_back(move);
 }
 
 void Board::printMoveset(uint64_t moveSet) {
@@ -302,5 +302,41 @@ void Board::printMoveset(uint64_t moveSet) {
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+bool Board::isGameOver()
+{
+    std::vector<Move> lm = legalMoves();
+    return lm.empty() | isThreefoldRepetition();
+}
+
+bool Board::isThreefoldRepetition()
+{
+    Board b2 = Board();
+    int repeatCount = 0;
+    for(Move m : moveHistory)
+    {
+        if(equals(b2))
+        {
+            repeatCount++;
+        }
+        b2.makeMove(m);
+    }
+    if(repeatCount >= 3)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Board::equals(Board other)
+{
+    return whitePieces == other.whitePieces && blackPieces == other.blackPieces && whiteRooks == other.whiteRooks && blackRooks == other.blackRooks
+    && whiteQueens == other.whiteQueens && blackQueens == other.blackQueens && whiteBishops == other.whiteBishops && blackBishops == other.blackBishops
+    && whiteKing == other.whiteKing && blackKing == other.blackKing && whiteKnights == other.whiteKnights && blackKnights == other.blackKnights
+    && whitePawns == other.whitePawns && blackPawns == other.blackPawns;
 }
 

@@ -106,6 +106,7 @@ Move ChessAI::alphaBeta(Board board, int minDepth, int maxDepth, int maxTime, bo
         }
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "Depth " << d << " completed in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count() << std::endl;
+        std::cout << "Depth Eval: " << currentMove.v << std::endl;
     }
     //TODO: intercept timout error.
     return currentMove.m;
@@ -122,9 +123,13 @@ int ChessAI::evaluate(Board& b, std::vector<Move>& lm, bool& color) {
             else if((b.blackPawns >> ((i*8) + j) & 0b1) == 0b1)
                 pieceVal -= 1;
             else if((b.whiteKnights >> ((i*8) + j) & 0b1) == 0b1)
+            {
                 pieceVal += 3;
+            }
             else if((b.blackKnights >> ((i*8) + j) & 0b1) == 0b1)
+            {
                 pieceVal -= 3;
+            }
             else if((b.whiteRooks >> ((i*8) + j) & 0b1) == 0b1)
                 pieceVal += 5;
             else if((b.blackRooks >> ((i*8) + j) & 0b1) == 0b1)
@@ -139,6 +144,7 @@ int ChessAI::evaluate(Board& b, std::vector<Move>& lm, bool& color) {
                 pieceVal -= 3;
         }
     }
+
     return pieceVal;
 }
 
