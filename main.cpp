@@ -12,10 +12,10 @@ int main() {
     uint64_t aa = G2;
     uint64_t aaa = 0;
     Board::printMoveset(queenAttacks(a, aa, aaa));
-    std::vector<Move> moves;
+    std::vector<Move> moves = b.legalMoves();
     int index;
     bool playerColor = false;
-    while(true)
+    while(!b.isGameOver())
     {
         b.printBoard();
         std::cout << std::endl;
@@ -39,9 +39,19 @@ int main() {
         }
         else
         {
-            Move m = ChessAI::alphaBeta(b, 0, 5, 0, b.color);
+            Move m = ChessAI::alphaBeta(b, 3, 5, 0, b.color);
+            std::cout << std::endl;
+            std::cout << pieceNames[m.getPiece()] << " " << squareNames[m.getFromSquare()] << std::endl;
             b.makeMove(m);
         }
+//        Move m = ChessAI::alphaBeta(b, 5, 5, 0, b.color);
+//        std::cout << std::endl;
+//        std::cout << pieceNames[m.getPiece()] << " " << squareNames[m.getToSquare()] << std::endl;
+//        b.makeMove(m);
+    }
+    for(auto & i : b.moveHistory)
+    {
+        std::cout << pieceNames[i.getPiece()] << " " << squareNames[i.getToSquare()] << std::endl;
     }
     return 0;
 }

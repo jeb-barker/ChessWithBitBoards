@@ -102,28 +102,29 @@ uint64_t rookAttacks(uint64_t& rookPos, uint64_t& whitePieces, uint64_t& blackPi
     uint64_t attacks = 0;
     uint64_t blockers = (whitePieces | blackPieces);
     //north
-    attacks |= Rays::rays[0][squareToSixBit.at(rookPos)];
-    if((Rays::rays[0][squareToSixBit.at(rookPos)] & blockers) != 0)
+    uint16_t rookPos16Bit = squareToSixBit.at(rookPos);
+    attacks |= Rays::rays[0][rookPos16Bit];
+    if((Rays::rays[0][rookPos16Bit] & blockers) != 0)
     {
-        attacks &= ~Rays::rays[0][63 - count_trailing_zeros(Rays::rays[0][squareToSixBit.at(rookPos)] & blockers)];
+        attacks &= ~Rays::rays[0][63 - count_trailing_zeros(Rays::rays[0][rookPos16Bit] & blockers)];
     }
     //east
-    attacks |= Rays::rays[1][squareToSixBit.at(rookPos)];
-    if((Rays::rays[1][squareToSixBit.at(rookPos)] & blockers) != 0)
+    attacks |= Rays::rays[1][rookPos16Bit];
+    if((Rays::rays[1][rookPos16Bit] & blockers) != 0)
     {
-        attacks &= ~Rays::rays[1][count_leading_zeros(Rays::rays[1][squareToSixBit.at(rookPos)] & blockers)];
+        attacks &= ~Rays::rays[1][count_leading_zeros(Rays::rays[1][rookPos16Bit] & blockers)];
     }
     //south
-    attacks |= Rays::rays[2][squareToSixBit.at(rookPos)];
-    if(Rays::rays[2][squareToSixBit.at(rookPos)] & blockers)
+    attacks |= Rays::rays[2][rookPos16Bit];
+    if(Rays::rays[2][rookPos16Bit] & blockers)
     {
-        attacks &= ~Rays::rays[2][count_leading_zeros(Rays::rays[2][squareToSixBit.at(rookPos)] & blockers)];
+        attacks &= ~Rays::rays[2][count_leading_zeros(Rays::rays[2][rookPos16Bit] & blockers)];
     }
     //west
-    attacks |= Rays::rays[3][squareToSixBit.at(rookPos)];
-    if(Rays::rays[3][squareToSixBit.at(rookPos)] & blockers)
+    attacks |= Rays::rays[3][rookPos16Bit];
+    if(Rays::rays[3][rookPos16Bit] & blockers)
     {
-        attacks &= ~Rays::rays[3][63 - count_trailing_zeros(Rays::rays[3][squareToSixBit.at(rookPos)] & blockers)];
+        attacks &= ~Rays::rays[3][63 - count_trailing_zeros(Rays::rays[3][rookPos16Bit] & blockers)];
     }
     return attacks;
 }
@@ -133,28 +134,29 @@ uint64_t bishopAttacks(uint64_t& bishopPos, uint64_t& whitePieces, uint64_t& bla
     uint64_t attacks = 0;
     uint64_t blockers = (whitePieces | blackPieces);
     //north-east
-    attacks |= Rays::rays[4][squareToSixBit.at(bishopPos)];
-    if((Rays::rays[4][squareToSixBit.at(bishopPos)] & blockers) != 0)
+    uint16_t bishopPos16Bit = squareToSixBit.at(bishopPos);
+    attacks |= Rays::rays[4][bishopPos16Bit];
+    if((Rays::rays[4][bishopPos16Bit] & blockers) != 0)
     {
-        attacks &= ~Rays::rays[4][63 - count_trailing_zeros(Rays::rays[4][squareToSixBit.at(bishopPos)] & blockers)];
+        attacks &= ~Rays::rays[4][63 - count_trailing_zeros(Rays::rays[4][bishopPos16Bit] & blockers)];
     }
     //south-east
-    attacks |= Rays::rays[5][squareToSixBit.at(bishopPos)];
-    if((Rays::rays[5][squareToSixBit.at(bishopPos)] & blockers) != 0)
+    attacks |= Rays::rays[5][bishopPos16Bit];
+    if((Rays::rays[5][bishopPos16Bit] & blockers) != 0)
     {
-        attacks &= ~Rays::rays[5][count_leading_zeros(Rays::rays[5][squareToSixBit.at(bishopPos)] & blockers)];
+        attacks &= ~Rays::rays[5][count_leading_zeros(Rays::rays[5][bishopPos16Bit] & blockers)];
     }
     //south-west
-    attacks |= Rays::rays[6][squareToSixBit.at(bishopPos)];
-    if(Rays::rays[6][squareToSixBit.at(bishopPos)] & blockers)
+    attacks |= Rays::rays[6][bishopPos16Bit];
+    if(Rays::rays[6][bishopPos16Bit] & blockers)
     {
-        attacks &= ~Rays::rays[6][count_leading_zeros(Rays::rays[6][squareToSixBit.at(bishopPos)] & blockers)];
+        attacks &= ~Rays::rays[6][count_leading_zeros(Rays::rays[6][bishopPos16Bit] & blockers)];
     }
     //north-west
-    attacks |= Rays::rays[7][squareToSixBit.at(bishopPos)];
-    if(Rays::rays[7][squareToSixBit.at(bishopPos)] & blockers)
+    attacks |= Rays::rays[7][bishopPos16Bit];
+    if(Rays::rays[7][bishopPos16Bit] & blockers)
     {
-        attacks &= ~Rays::rays[7][63 - count_trailing_zeros(Rays::rays[7][squareToSixBit.at(bishopPos)] & blockers)];
+        attacks &= ~Rays::rays[7][63 - count_trailing_zeros(Rays::rays[7][bishopPos16Bit] & blockers)];
     }
     return attacks;
 }
