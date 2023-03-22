@@ -70,6 +70,29 @@ Board::Board()
     moveHistory = std::vector<Move>();
 }
 
+Board::Board(bool color, uint64_t whitePieces, uint64_t blackPieces, uint64_t whiteKing, uint64_t blackKing, uint64_t whiteKnights,
+             uint64_t blackKnights, uint64_t whitePawns, uint64_t blackPawns, uint64_t whiteRooks, uint64_t blackRooks,
+             uint64_t whiteBishops, uint64_t blackBishops, uint64_t whiteQueens, uint64_t blackQueens)
+{
+    this->whitePieces =  whitePieces;
+    this->whiteKing =    whiteKing;
+    this->whitePawns =   whitePawns;
+    this->whiteKnights = whiteKnights;
+    this->whiteRooks =   whiteRooks;
+    this->whiteBishops = whiteBishops;
+    this->whiteQueens =  whiteQueens;
+
+    this->blackPieces =  blackPieces;
+    this->blackKing =    blackKing;
+    this->blackPawns =   blackPawns;
+    this->blackKnights = blackKnights;
+    this->blackRooks =   blackRooks;
+    this->blackBishops = blackBishops;
+    this->blackQueens =  blackQueens;
+
+    this->color = color;
+}
+
 std::vector<Move> Board::legalMoves()
 {
     if(color)
@@ -184,7 +207,7 @@ void Board::makeMove(Move move)
         if((whitePawns & toSquare) != 0)
             whitePawns ^= toSquare;
         if((whiteRooks & toSquare) != 0)
-            whitePieces ^= toSquare;
+            whiteRooks ^= toSquare;
         if((whiteBishops & toSquare) != 0)
             whiteBishops ^= toSquare;
         if((whiteQueens & toSquare) != 0)
@@ -312,6 +335,23 @@ bool Board::isGameOver()
 
 bool Board::isThreefoldRepetition()
 {
+//    uint64_t whitePieces2 =  0x000000100100a490;
+//    uint64_t king =    0x0000000000000010;
+//    uint64_t pawns =   0x000000100000a300;
+//    uint64_t knights = 0x0000000000010000;
+//    uint64_t rooks =   0x0000000000000080;
+//    uint64_t bishops = 0x0000000000000000;
+//    uint64_t queens =  0x0000000001000000;
+//
+//    uint64_t pieces =  0x81a7060060000000;
+//    uint64_t bKing =    0x0000020000000000;
+//    uint64_t i =   0x00a7000020000000;
+//    uint64_t bKN = 0x0000040000000000;
+//    uint64_t Brook =   0x8100000000000000;
+//    uint64_t bbish = 0x0000000000000000;
+//    uint64_t bQueen =  0x0000000040000000;
+//    Board b2 = Board(false, whitePieces2, pieces, king, bKing, knights, bKN, pawns, i,
+//                     rooks, Brook, bishops, bbish, queens, bQueen);
     Board b2 = Board();
     int repeatCount = 0;
     for(Move m : moveHistory)
@@ -339,4 +379,126 @@ bool Board::equals(Board other)
     && whiteKing == other.whiteKing && blackKing == other.blackKing && whiteKnights == other.whiteKnights && blackKnights == other.blackKnights
     && whitePawns == other.whitePawns && blackPawns == other.blackPawns;
 }
+
+bool Board::isCheck()
+{
+    uint64_t knights;
+    uint64_t rooks;
+    uint64_t pawns;
+    uint64_t bishops;
+    uint64_t queens;
+    uint64_t oPieces;
+    uint64_t mPieces;
+
+
+    if(color)
+    {
+        knights = whiteKnights;
+        rooks = whiteRooks;
+        pawns = whitePawns;
+        bishops = whiteBishops;
+        queens = whiteQueens;
+        oPieces = whitePieces;
+        mPieces = blackPieces;
+        //check for checks.
+        uint64_t attacks = whiteKingMoves(whiteKing, oPieces, mPieces);
+        uint64_t knightAttacks = 0;
+        while((knights & -knights) > 0)
+        {
+            uint64_t knight = (knights & -knights);
+            knightAttacks |= whiteKnightMoves(knight, oPieces, mPieces);
+            knights ^= knight;
+        }
+        uint64_t pawnAttacks = 0;
+        while((pawns & -pawns) > 0)
+        {
+            uint64_t pawn = (pawns & -pawns);
+            pawnAttacks |= whitePawnAttacks(pawn);
+            pawns ^= pawn;
+        }
+        uint64_t rookAttacksint = 0;
+        while((rooks & -rooks) > 0)
+        {
+            uint64_t rook = (rooks & -rooks);
+            rookAttacksint |= rookAttacks(rook, mPieces, oPieces);
+            rooks ^= rook;
+        }
+        uint64_t bishopAttacksint = 0;
+        while((bishops & -bishops) > 0)
+        {
+            uint64_t bishop = (bishops & -bishops);
+            bishopAttacksint |= bishopAttacks(bishop, mPieces, oPieces);
+            bishops ^= bishop;
+        }
+        uint64_t queenAttacksint = 0;
+        while((queens & -queens) > 0)
+        {
+            uint64_t queen = (queens & -queens);
+            queenAttacksint |= queenAttacks(queen, mPieces, oPieces);
+            queens ^= queen;
+        }
+
+        attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint | bishopAttacksint | queenAttacksint;
+        if( (blackKing & attacks) != 0b0)
+        {
+            return true;
+        }
+    }
+        //white
+    else
+    {
+        knights = blackKnights;
+        rooks = blackRooks;
+        pawns = blackPawns;
+        bishops = blackBishops;
+        queens = blackQueens;
+        oPieces = blackPieces;
+        mPieces = whitePieces;
+        //check for checks.
+        uint64_t attacks = blackKingMoves(blackKing, whitePieces, blackPieces);
+        uint64_t knightAttacks = 0;
+        while((knights & -knights) > 0)
+        {
+            uint64_t knight = (knights & -knights);
+            knightAttacks |= blackKnightMoves(knight, mPieces, oPieces);
+            knights ^= knight;
+        }
+        uint64_t pawnAttacks = 0;
+        while((pawns & -pawns) > 0)
+        {
+            uint64_t pawn = (pawns & -pawns);
+            pawnAttacks |= blackPawnAttacks(pawn);
+            pawns ^= pawn;
+        }
+        uint64_t rookAttacksint = 0;
+        while((rooks & -rooks) > 0)
+        {
+            uint64_t rook = (rooks & -rooks);
+            rookAttacksint |= rookAttacks(rook, mPieces, oPieces);
+            rooks ^= rook;
+        }
+        uint64_t bishopAttacksint = 0;
+        while((bishops & -bishops) > 0)
+        {
+            uint64_t bishop = (bishops & -bishops);
+            bishopAttacksint |= bishopAttacks(bishop, mPieces, oPieces);
+            bishops ^= bishop;
+        }
+        uint64_t queenAttacksint = 0;
+        while((queens & -queens) > 0)
+        {
+            uint64_t queen = (queens & -queens);
+            queenAttacksint |= queenAttacks(queen, mPieces, oPieces);
+            queens ^= queen;
+        }
+
+        attacks = attacks | knightAttacks | pawnAttacks | rookAttacksint | bishopAttacksint | queenAttacksint;
+        if( (whiteKing & attacks) != 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 

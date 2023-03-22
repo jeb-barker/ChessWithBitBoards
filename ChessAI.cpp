@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "ChessAI.h"
+#include "MoveGeneration.h"
 
 const int CHESS_MIN = -1000000;
 const int CHESS_MAX =  1000000;
@@ -145,16 +146,69 @@ int ChessAI::evaluate(Board& b, std::vector<Move>& lm, bool& color) {
         }
     }
 
-    return pieceVal;
+
+    int centerAttacks = 0;
+    if((b.whitePieces & E4) != 0  || (b.whitePieces & D4) != 0)
+    {
+        centerAttacks++;
+    }
+    if((b.blackPieces & E5) != 0  || (b.blackPieces & D5) != 0)
+    {
+        centerAttacks--;
+    }
+
+
+    return pieceVal + centerAttacks;
 }
 
 int ChessAI::gameStatus(Board &b, std::vector<Move>& lm) {
-    if(lm.empty())
+    if(b.isGameOver())
     {
+        if(b.isCheck())
+        {
+            if(b.color)
+            {
+                return CHESS_MAX - 1;
+            }
+            else
+            {
+                return CHESS_MIN + 1;
+            }
+        }
+        else
+        {
+            return -1;
+        }
         //no legal moves check for stalemate or checkmate.
         //Uncomment to print checkmates and stalemates.
         //b.printBoard();
-        return -1;
+        if(b.color)
+        {
+            //if in check return max - 1
+            if(b.isCheck())
+            {
+                return CHESS_MAX - 1;
+            }
+            else
+            {
+                return -20;
+            }
+            //else stalemate return min+2
+        }
+        else
+        {
+            //if in check return min + 1
+            if(b.isCheck())
+            {
+                return CHESS_MIN + 1;
+            }
+            else
+            {
+                return 20;
+            }
+            //else stalemate return max - 2
+        }
+        //return -1;
         //return -Max or Max based on who got checkmated.
     }
     return 0;

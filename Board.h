@@ -34,6 +34,20 @@ public:
     static void printMoveset(uint64_t moveSet);
 
     Board();
+    Board(bool color, uint64_t whitePieces,
+    uint64_t blackPieces,
+    uint64_t whiteKing,
+    uint64_t blackKing,
+    uint64_t whiteKnights,
+    uint64_t blackKnights,
+    uint64_t whitePawns,
+    uint64_t blackPawns,
+    uint64_t whiteRooks,
+    uint64_t blackRooks,
+    uint64_t whiteBishops,
+    uint64_t blackBishops,
+    uint64_t whiteQueens,
+    uint64_t blackQueens);
 
     std::vector<Move> legalMoves();
     void filterLegalMoves(std::vector<Move>& pseudoLegalMoves);
@@ -42,6 +56,7 @@ public:
 
     bool isGameOver();
     bool isThreefoldRepetition();
+    bool isCheck();
     bool equals(Board other);
 
 private:
