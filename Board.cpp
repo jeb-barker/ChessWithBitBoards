@@ -91,6 +91,9 @@ Board::Board(bool color, uint64_t whitePieces, uint64_t blackPieces, uint64_t wh
     this->blackQueens =  blackQueens;
 
     this->color = color;
+    epFlags = 0;
+    castlingFlags = 0b0000;
+    moveHistory = std::vector<Move>();
 }
 
 std::vector<Move> Board::legalMoves()
@@ -157,19 +160,43 @@ void Board::makeMove(Move move)
         else if(move.piece == 5)
         {
             //pawns
-            //en-passant and promotion should be handled here.
             blackPawns ^= fromSquare;
-            blackPawns ^= toSquare;
-
-            //en passant
-            if(((fromSquare & R7) != 0) & ((toSquare & R5) != 0))
+            //en-passant and promotion should be handled here.
+            //knight
+            if(move.getFlags() == 0b0110)
             {
-                //to undo this you need to go back two moves.
-                epFlags = fromSquare >> 8;
+                blackKnights ^= toSquare;
             }
-            if(move.getFlags() == 0b0101)
+            //bishop
+            if(move.getFlags() == 0b0111)
             {
-                toSquare = toSquare << 8;
+                blackBishops ^= toSquare;
+            }
+            //rook
+            if(move.getFlags() == 0b1000)
+            {
+                blackRooks ^= toSquare;
+            }
+            //queen
+            if(move.getFlags() == 0b1001)
+            {
+                blackQueens ^= toSquare;
+            }
+            //no promotion
+            else
+            {
+                blackPawns ^= toSquare;
+
+                //en passant
+                if (((fromSquare & R7) != 0) & ((toSquare & R5) != 0))
+                {
+                    //to undo this you need to go back two moves.
+                    epFlags = fromSquare >> 8;
+                }
+                if (move.getFlags() == 0b0101)
+                {
+                    toSquare = toSquare << 8;
+                }
             }
         }
         else if(move.piece == 2)
@@ -253,17 +280,39 @@ void Board::makeMove(Move move)
         {
             //pawns
             whitePawns ^= fromSquare;
-            whitePawns ^= toSquare;
-
-            //en passant should be "turned on"
-            if(((fromSquare & R2) != 0) & ((toSquare & R4) != 0))
+            //en-passant and promotion should be handled here.
+            //knight
+            if(move.getFlags() == 0b0110)
             {
-                epFlags = fromSquare << 8;
+                whiteKnights ^= toSquare;
             }
-            //en passant was performed
-            if(move.getFlags() == 0b0101)
+            //bishop
+            if(move.getFlags() == 0b0111)
             {
-                toSquare = toSquare >> 8;
+                whiteBishops ^= toSquare;
+            }
+            //rook
+            if(move.getFlags() == 0b1000)
+            {
+                whiteRooks ^= toSquare;
+            }
+            //queen
+            if(move.getFlags() == 0b1001)
+            {
+                whiteQueens ^= toSquare;
+            }
+            else
+            {
+                //en passant should be "turned on"
+                if (((fromSquare & R2) != 0) & ((toSquare & R4) != 0))
+                {
+                    epFlags = fromSquare << 8;
+                }
+                //en passant was performed
+                if (move.getFlags() == 0b0101)
+                {
+                    toSquare = toSquare >> 8;
+                }
             }
         }
         else if(move.piece == 2)
@@ -335,24 +384,24 @@ bool Board::isGameOver()
 
 bool Board::isThreefoldRepetition()
 {
-//    uint64_t whitePieces2 =  0x000000100100a490;
-//    uint64_t king =    0x0000000000000010;
-//    uint64_t pawns =   0x000000100000a300;
-//    uint64_t knights = 0x0000000000010000;
-//    uint64_t rooks =   0x0000000000000080;
-//    uint64_t bishops = 0x0000000000000000;
-//    uint64_t queens =  0x0000000001000000;
-//
-//    uint64_t pieces =  0x81a7060060000000;
-//    uint64_t bKing =    0x0000020000000000;
-//    uint64_t i =   0x00a7000020000000;
-//    uint64_t bKN = 0x0000040000000000;
-//    uint64_t Brook =   0x8100000000000000;
-//    uint64_t bbish = 0x0000000000000000;
-//    uint64_t bQueen =  0x0000000040000000;
-//    Board b2 = Board(false, whitePieces2, pieces, king, bKing, knights, bKN, pawns, i,
-//                     rooks, Brook, bishops, bbish, queens, bQueen);
-    Board b2 = Board();
+    uint64_t whitePieces2 =  0x0010000000000001;
+    uint64_t king =    0x0000000000000001;
+    uint64_t pawns =   0x0010000000000000;
+    uint64_t knights = 0x0000000000000000;
+    uint64_t rooks =   0x0000000000000000;
+    uint64_t bishops = 0x0000000000000000;
+    uint64_t queens =  0x0000000000000000;
+
+    uint64_t pieces =  0x0000000000000004;
+    uint64_t bKing =    0x0000000000000004;
+    uint64_t i =   0x0000000000000000;
+    uint64_t bKN = 0x0000000000000000;
+    uint64_t Brook =   0x0000000000000000;
+    uint64_t bbish = 0x0000000000000000;
+    uint64_t bQueen =  0x0000000000000000;
+    Board b2 = Board(false, whitePieces2, pieces, king, bKing, knights, bKN, pawns, i,
+                     rooks, Brook, bishops, bbish, queens, bQueen);
+    //Board b2 = Board();
     int repeatCount = 0;
     for(Move m : moveHistory)
     {

@@ -217,13 +217,24 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
 
             while((pawnMoves & -pawnMoves) > 0)
             {
-                uint16_t ep = 0;
-                if(epFlags == (pawnMoves & -pawnMoves))
+                uint64_t pawn = pawnMoves & -pawnMoves;
+                if((pawn & R1) != 0)
                 {
-                    ep = 0b0101;
+                    //add options for promotion.
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b0110, 5, true );
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b0111, 5, true );
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b1000, 5, true );
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b1001, 5, true );
                 }
-                moves.emplace_back(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, true );
-                pawnMoves ^= (pawnMoves & -pawnMoves);
+                else
+                {
+                    uint16_t ep = 0;
+                    if (epFlags == pawn) {
+                        ep = 0b0101;
+                    }
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + ep,5, true);
+                }
+                pawnMoves ^= pawn;
             }
             pawns ^= currMove;
         }
@@ -312,7 +323,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
             knights ^= currMove;
         }
 
-        uint64_t pawnMoves;
+        uint64_t pawnMoves = 0;
         while((pawns & -pawns) > 0)
         {
             uint64_t currMove = (pawns & -pawns);
@@ -320,13 +331,25 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
 
             while((pawnMoves & -pawnMoves) > 0)
             {
-                uint16_t ep = 0;
-                if(epFlags == (pawnMoves & -pawnMoves))
+                uint64_t pawn = pawnMoves & -pawnMoves;
+                if((pawn & R8) != 0)
                 {
-                    ep = 0b0101;
+                    //add options for promotion.
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b0110, 5, false );
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b0111, 5, false );
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b1000, 5, false );
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + 0b1001, 5, false );
                 }
-                moves.emplace_back(pawnMoves & -pawnMoves, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawnMoves & -pawnMoves)) << 4) + ep, 5, false );
-                pawnMoves ^= (pawnMoves & -pawnMoves);
+                else
+                {
+                    uint16_t ep = 0;
+                    if (epFlags == pawn)
+                    {
+                        ep = 0b0101;
+                    }
+                    moves.emplace_back(pawn, (((squareToSixBit.at(currMove) << 6) + squareToSixBit.at(pawn)) << 4) + ep,5, false);
+                }
+                pawnMoves ^= pawn;
             }
             pawns ^= currMove;
         }
