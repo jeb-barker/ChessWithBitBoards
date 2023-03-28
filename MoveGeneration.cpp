@@ -178,6 +178,7 @@ std::vector<Move> MoveGeneration::pseudoLegalMoves(bool color, uint64_t& whitePi
         uint64_t kingMoves = blackKingMoves(kingPos, whitePieces, blackPieces);
         while((kingMoves & -kingMoves) > 0)
         {
+
             moves.emplace_back((kingMoves & -kingMoves), (((squareToSixBit.at(kingPos) << 6) + squareToSixBit.at(kingMoves & -kingMoves)) << 4), 0, true);
             kingMoves ^= (kingMoves & -kingMoves);
         }
